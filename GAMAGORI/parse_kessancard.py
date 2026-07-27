@@ -80,6 +80,26 @@ def pdftotext(pdf_path: str) -> list:
     return r.stdout.splitlines()
 
 
+def pdftotext_pages(pdf_path: str) -> list:
+    """ページごとのテキスト（\\fフォームフィード区切り）のリストを返す。
+    総括表（1ページ目）に限定して検索することで、後続ページの類似団体比較・
+    経年分析グラフ内の無関係な数値を誤って拾わないようにするために使う
+    （敵対的校閲で発見: 将来負担比率が「－」の年度に、後続ページの類似団体
+    平均値を誤って採用していた）。"""
+    r = subprocess.run(
+        ["pdftotext", "-layout", pdf_path, "-"],
+        capture_output=True, text=True, check=True,
+    )
+    if "Missing language pack" in r.stderr and not r.stdout.strip():
+        raise RuntimeError(
+            f"{os.path.basename(pdf_path)}: poppler-data 未導入のためCJK抽出不可。"
+            " `apt-get install poppler-data` を実行してください。")
+    pages = r.stdout.split("\f")
+    if pages and pages[-1].strip() == "":
+        pages = pages[:-1]
+    return pages
+
+
 def xlsx_to_lines(xlsx_path: str, sheet_names) -> list:
     """指定シートの各行を疑似テキスト行（セル値をスペース区切りで連結）に変換する。
     シートの並び順・行の並び順を保つ（ラベルの「最初の出現」を PDF と同様に扱うため）。"""
@@ -148,6 +168,46 @@ def label_num(lines, label):
     return vals[0] if vals else None
 
 
+def label_nums_next_line(lines, label, n=2, min_digits=4):
+    """label_numsのフォールバック。年度によってはpdftotext -layoutの列位置
+    推定が乱れ、ラベルとその数値が1行分ずれる（例: H25・H26の「歳入総額」で、
+    ラベルは表題行の末尾に、実際の数値は次の行の途中に出現する）。
+    ラベルを含む行の「次の行」から、桁数がmin_digits以上の数値を探す
+    （分類コード「Ⅱ－０」等の小さい数値を誤って拾わないため、財政の千円単位の
+    合計額は必ず4桁以上になることを利用してフィルタする）。"""
+    label_pat = r"\s*".join(re.escape(c) for c in label)
+    lab_re = re.compile(label_pat)
+    for i in range(len(lines) - 1):
+        if not lab_re.search(lines[i]):
+            continue
+        found = []
+        for s, d in NUM_RE.findall(lines[i + 1]):
+            if len(d.replace(",", "")) >= min_digits:
+                found.append(parse_num(s, d))
+                if len(found) >= n:
+                    break
+        if found:
+            return found
+    return None
+
+
+def label_num_with_optional_note(lines, label):
+    """label_numと同じだが、ラベル直後に「(※6)」のような脚注記号が挟まる
+    年度にも対応する（例:「ラスパイレス指数(※6) 107.9 (99.7)」）。
+    括弧書きの参考値（(99.7)等）は対象外とし、最初の素の数値のみを採る。"""
+    tok = r"[△▲\-−]?\d[\d,]*(?:\.\d+)?"
+    label_pat = r"\s*".join(re.escape(c) for c in label)
+    pat = re.compile(label_pat + r"(?:[\(（]※?\d+[\)）])?[ \t]*(" + tok + r")")
+    for ln in lines:
+        m = pat.search(ln)
+        if not m:
+            continue
+        nm = NUM_RE.match(m.group(1))
+        if nm:
+            return parse_num(nm.group(1), nm.group(2))
+    return None
+
+
 POP_RE = re.compile(r"([令平昭]?)(\d+)\.(\d+)\.(\d+)[\(（]\s*人\s*[\)）]\s*(\d[\d,]*)")
 
 
@@ -171,45 +231,62 @@ ZAISEI_TITLE_RE = re.compile(r"財政状況資料集")
 ICHIRAN_TITLE_RE = re.compile(r"財政状況等一覧表")
 
 
-def parse_zaisei(lines, era, n):
+def parse_zaisei(page1_lines, full_lines, era, n):
     """財政状況資料集（総括表＋普通会計の状況）。ページ2以降が無い年度（H24）は
-    地方税・性質別歳出が自動的に空欄になる（該当ラベルが見つからないため）。"""
+    地方税・性質別歳出が自動的に空欄になる（該当ラベルが見つからないため）。
+
+    総括表の項目（財政力指数・実質収支比率・経常収支比率・実質公債費比率・
+    将来負担比率・歳入総額等・地方債現在高・積立金・住基人口）は必ず1ページ目
+    だけで探す。敵対的校閲で判明: 全文検索だと、将来負担比率が「－」（該当なし）
+    の年度に、後続ページの「類似団体内平均値」等の無関係な数値を誤って
+    採用してしまうことがあった（H28・H29で発生）。地方税・人件費等の性質別
+    歳出は2ページ目「普通会計の状況」にしかないため、そちらはfull_linesを使う。"""
     row = {}
-    pop, basis = extract_juki_population(lines, era)
+    pop, basis = extract_juki_population(page1_lines, era)
     row["住基人口"] = pop
     row["住基人口_基準日"] = basis
 
     def first(label):
-        v = label_nums(lines, label, n=2)
+        v = label_nums(page1_lines, label, n=2)
         return v[0] if v else None
 
-    row["歳入総額A_千円"] = first("歳入総額")
+    # 歳入総額のみ、ラベルと数値が1行ずれるレイアウト崩れが起きる年度がある
+    # （H25・H26。敵対的校閲で発見）。他の項目（特に将来負担比率のように
+    # 「－」＝本当に値が無い年度が普通にある項目）にまでこのフォールバックを
+    # 広げると、次の行にある無関係な数値（人口・面積等）を誤って拾ってしまう
+    # ため、歳入総額だけに限定して適用する。
+    nyuu = first("歳入総額")
+    if nyuu is None:
+        v = label_nums_next_line(page1_lines, "歳入総額", n=2)
+        nyuu = v[0] if v else None
+    row["歳入総額A_千円"] = nyuu
     row["歳出総額B_千円"] = first("歳出総額")
     row["歳入歳出差引C_千円"] = first("歳入歳出差引")
     row["翌年度繰越財源D_千円"] = first("翌年度に繰越すべき財源")
     row["実質収支E_千円"] = first("実質収支")
-    row["地方税_千円"] = label_num(lines, "地方税")
+    row["地方税_千円"] = label_num(full_lines, "地方税")
     row["地方債現在高_千円"] = first("地方債現在高")
     row["財政力指数"] = first("財政力指数")
     row["実質収支比率_%"] = first("実質収支比率")
     row["経常収支比率_%"] = first("経常収支比率")
     row["実質公債費比率_%"] = first("実質公債費比率")
     row["将来負担比率_%"] = first("将来負担比率")
-    row["人件費_千円"] = label_num(lines, "人件費")
-    row["扶助費_千円"] = label_num(lines, "扶助費")
-    row["公債費_千円"] = label_num(lines, "公債費")
-    row["普通建設事業費_千円"] = label_num(lines, "普通建設事業費")
+    row["人件費_千円"] = label_num(full_lines, "人件費")
+    row["扶助費_千円"] = label_num(full_lines, "扶助費")
+    row["公債費_千円"] = label_num(full_lines, "公債費")
+    row["普通建設事業費_千円"] = label_num(full_lines, "普通建設事業費")
 
-    zaikin = label_num(lines, "財政調整基金")
-    gensai = label_num(lines, "減債基金")
-    sonota = label_num(lines, "その他特定目的基金")
+    zaikin = first("財政調整基金")
+    gensai = first("減債基金")
+    sonota = first("その他特定目的基金")
     row["うち財政調整基金_千円"] = zaikin
     row["積立金現在高_千円"] = (
         zaikin + gensai + sonota if None not in (zaikin, gensai, sonota) else None
     )
-    row["ラスパイレス指数"] = None  # 財政状況資料集の総括表にラスパイレス指数の記載はあるが
-    #                                  「(N.N)」等の注記付きで様式が年度により揺れるため、
-    #                                  確度の高い抽出ができるまでは未実装（空欄）。
+    # ラスパイレス指数: 「ラスパイレス指数(※6) 107.9 (99.7)」のように脚注番号が
+    # 数値の直前に挟まる年度があるため、ラベル直後に(※N)等の脚注記号が
+    # 続くケースを許容してから最初の数値（括弧内の参考値ではない方）を採る。
+    row["ラスパイレス指数"] = label_num_with_optional_note(page1_lines, "ラスパイレス指数")
     return row
 
 
@@ -238,7 +315,10 @@ def parse_ichiran(lines):
 
     def current_year_value(label):
         """H18: 単一値（当該年度のみ掲載）→そのまま。
-        H19-21: 「決算A(前年度) 決算B(当該年度) 差引」→2番目の値。"""
+        H19-21: 「決算A(前年度) 決算B(当該年度) 差引」→2番目の値。
+        値が1個しか取れない場合、それが「当該年度のみ掲載」（H18方式）なのか
+        「当該年度が－で前年度Aだけが残った」ものなのかは行の形からは区別できない
+        ため、呼び出し側で個別に判断すること（将来負担比率の特殊処理を参照）。"""
         v = label_nums(lines, label, n=2)
         if not v:
             return None
@@ -248,17 +328,39 @@ def parse_ichiran(lines):
     row["実質収支比率_%"] = current_year_value("実質収支比率")  # H18のみ掲載
     row["経常収支比率_%"] = current_year_value("経常収支比率")
     row["実質公債費比率_%"] = current_year_value("実質公債費比率")
-    row["将来負担比率_%"] = current_year_value("将来負担比率")  # H19-21のみ掲載
+    row["将来負担比率_%"] = ichiran_shourai_futan_hiritsu(lines)
 
     # 「充当可能基金の状況」節は単位が百万円のため×1000して千円に揃える。
+    # 個々の基金を合算せず、原本に印字されている「充当可能基金 計」の行を
+    # そのまま使う（敵対的校閲で判明: 個別項目の合算は、原本自身が個別項目を
+    # 四捨五入した後の値を印字しているため、原本の「計」印字値と食い違うことが
+    # あった。例: H19の財政調整基金1,450+減債基金265+その他9,831=11,546だが、
+    # 原本の「計」は11,545）。
     zaikin = current_year_value("財政調整基金")
-    gensai = current_year_value("減債基金")
-    sonota = current_year_value("その他充当可能基金")
     row["うち財政調整基金_千円"] = zaikin * 1000 if zaikin is not None else None
-    row["積立金現在高_千円"] = (
-        (zaikin + gensai + sonota) * 1000 if None not in (zaikin, gensai, sonota) else None
-    )
+    kei = current_year_value("充当可能基金計")
+    row["積立金現在高_千円"] = kei * 1000 if kei is not None else None
     return row
+
+
+def ichiran_shourai_futan_hiritsu(lines):
+    """将来負担比率（H19-21の「６．財政指標の状況」節のみに掲載）。
+    敵対的校閲で判明した2つの誤り:
+    - H19（この指標が初めて開示された年度）は前年度Aの列自体が無く、
+      行は「決算B(当該年度) 早期健全化基準」の2値になる。早期健全化基準は
+      将来負担比率について全国一律350.0%と法令で定められた定数のため、
+      2番目の値がちょうど350.0なら、それは基準であって前年度Bではないと
+      判断し、1番目の値を当該年度として採る。
+    - 当該年度が「－」（発生なし）の年度は、前年度Aの値だけが1個の数値として
+      残ってしまい、それを当該年度の値と誤認しやすい（H21で発生）。将来負担
+      比率にはH18方式（単一値のみ掲載）のケースが存在しないため、1個しか
+      取れない場合は前年度の値が残っているとみなし、空欄にする。"""
+    v = label_nums(lines, "将来負担比率", n=2)
+    if not v:
+        return None
+    if len(v) >= 2:
+        return v[0] if v[1] == 350.0 else v[1]
+    return None
 
 
 def parse_one(path: str):
@@ -267,23 +369,29 @@ def parse_one(path: str):
 
     if ext == ".xlsx":
         # シート名だけでは年度が分からないため「総括表」シートの表題セルから拾う。
-        lines = xlsx_to_lines(path, ["総括表", "普通会計の状況"])
-        year_info = year_from_content(lines)
+        # 総括表の項目は「総括表」シート単独（page1相当）で探し、地方税・性質別
+        # 歳出は「普通会計の状況」シートを加えたfull_linesで探す（後続ページの
+        # 無関係な数値を誤って拾わないため。PDF側と同じ理由）。
+        page1_lines = xlsx_to_lines(path, ["総括表"])
+        full_lines = page1_lines + xlsx_to_lines(path, ["普通会計の状況"])
+        year_info = year_from_content(page1_lines)
         if year_info is None:
             raise RuntimeError("年度を特定できません（総括表シートに令和/平成+年度の表記が見当たらない）")
         seireki, wareki, era, n = year_info
-        row = parse_zaisei(lines, era, n)
+        row = parse_zaisei(page1_lines, full_lines, era, n)
     elif ext == ".pdf":
-        lines = pdftotext(path)
-        year_info = year_from_content(lines)
+        pages = pdftotext_pages(path)
+        page1_lines = pages[0].splitlines() if pages else []
+        full_lines = "\n".join(pages).splitlines()
+        year_info = year_from_content(page1_lines)
         if year_info is None:
             raise RuntimeError("年度を特定できません（中身に令和/平成/昭和+年度の表記が見当たらない）")
         seireki, wareki, era, n = year_info
-        header = "\n".join(lines[:5])
+        header = "\n".join(page1_lines[:5])
         if ZAISEI_TITLE_RE.search(header):
-            row = parse_zaisei(lines, era, n)
+            row = parse_zaisei(page1_lines, full_lines, era, n)
         elif ICHIRAN_TITLE_RE.search(header):
-            row = parse_ichiran(lines)
+            row = parse_ichiran(full_lines)
         else:
             raise RuntimeError(f"未知の様式（表題に「財政状況資料集」「財政状況等一覧表」のいずれも見当たらない）")
     else:

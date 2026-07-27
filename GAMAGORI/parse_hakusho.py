@@ -128,8 +128,12 @@ def era_to_seireki(token: str):
 # 施設用途（大分類・中分類）の縦結合セルが施設名の前に同じ行として現れることが
 # あるため（例:「小学校      大塚小学校」）、2つ以上の空白で区切られた最後の
 # セグメントだけを施設名として採用する。
+# 延床面積は通常「5,264」のようにカンマ区切りだが、「競技場」の行では原本の
+# 誤植で「5.264」とピリオドになっている（敵対的校閲で発見）。この白書内で
+# 延床面積が小数（㎡未満）で記載されている例は無いため、ピリオドもカンマと
+# 同じ桁区切りとして許容する。
 ROW_TAIL_RE = re.compile(
-    r"[ \t]+(?P<area>[\d,]+)[ \t]+(?P<year>[SHR](?:元|\d+))[ \t]+(?P<aging>[\d.]+|対象外)\b"
+    r"[ \t]+(?P<area>[\d,.]+)[ \t]+(?P<year>[SHR](?:元|\d+))[ \t]+(?P<aging>[\d.]+|対象外)\b"
 )
 NUM_RE = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
 
@@ -146,7 +150,7 @@ def parse_facility_row(line):
     name = strip_category_prefix(prefix)
     if not name:
         return None
-    area = float(m.group("area").replace(",", ""))
+    area = float(m.group("area").replace(",", "").replace(".", ""))
     year = era_to_seireki(m.group("year"))
     aging = m.group("aging")
     return name, area, year, (None if aging == "対象外" else float(aging))
@@ -167,7 +171,12 @@ def parse_aging_table(lines):
 def parse_usage_table(lines):
     """利用状況（小分類）表: {施設名: 利用者数_6年平均}
     行末の数値列のうち最後に出現するものが「6年平均」列（年度別の値が―で欠けて
-    いても6年平均は最終列に位置するため、最後の数値を採用すれば良い）。"""
+    いても6年平均は最終列に位置するため、最後の数値を採用すれば良い）。
+    公営住宅の「利用状況」は人数ではなく入居率(%)を掲載しており単位が違うため
+    （敵対的校閲で判明）、整数に変換できない行は該当施設をスキップする
+    （＝人数として意味を持つ値だけを採用し、％をそのまま「人」に混ぜない）。
+    最初に一致した行を優先し、同じ施設名の行が後続の別表（利用率等）に
+    出てきても上書きしない。"""
     out = {}
     for ln in lines:
         m = re.match(r"^[ \t]*(?P<name>[^\s\d][^\d]*?)[ \t]+(?P<area>[\d,]+)[ \t]+(?P<rest>.*)$", ln)
@@ -177,7 +186,12 @@ def parse_usage_table(lines):
         if not nums:
             continue
         name = m.group("name").strip()
-        out[name] = int(nums[-1].replace(",", ""))
+        if name in out:
+            continue
+        try:
+            out[name] = int(nums[-1].replace(",", ""))
+        except ValueError:
+            continue
     return out
 
 
@@ -192,7 +206,12 @@ def parse_cost_table(lines):
         if len(nums) < 2:
             continue
         name = m.group("name").strip()
-        out[name] = int(nums[-1].replace(",", ""))
+        if name in out:
+            continue
+        try:
+            out[name] = int(nums[-1].replace(",", ""))
+        except ValueError:
+            continue
     return out
 
 
@@ -219,11 +238,19 @@ def extract_daisan_shou(pages):
             block_lines = block.splitlines()
             daibunrui = SHOUBUNRUI_TO_DAIBUNRUI[label]
 
-            def section(title_kw, lines):
+            def section(title, lines):
+                """`title`（老朽化状況／利用状況／コスト状況）に直後に「（」が
+                続く最初の行から、次の図表番号等が現れるまでを切り出す。
+                括弧の中身（小分類名）では照合しない。敵対的校閲で判明: 図表の
+                キャプションは副節見出しと表記が食い違うことがある
+                （例:「公営住宅」の副節なのにキャプションは「老朽化状況
+                （公営住宅等）」、「消防資機材庫等」の副節なのにキャプションが
+                誤植で「老朽化状況（消防署）」）。括弧の中身を見出しラベルと
+                厳密一致させると、このズレでセクションが丸ごと空になり
+                施設が消失するため、「title＋（」の直後一致のみで判定する。"""
                 out, capturing = [], False
                 for ln in lines:
-                    if not capturing and title_kw in ln and "老朽化状況" in ln or \
-                       not capturing and title_kw in ln and ("利用状況" in ln or "コスト状況" in ln):
+                    if not capturing and re.search(re.escape(title) + r"[（(]", ln):
                         capturing = True
                         continue
                     if capturing:
@@ -232,9 +259,9 @@ def extract_daisan_shou(pages):
                         out.append(ln)
                 return out
 
-            aging_lines = section(f"老朽化状況（{label}）", block_lines)
-            usage_lines = section(f"利用状況（{label}）", block_lines)
-            cost_lines = section(f"コスト状況（{label}）", block_lines)
+            aging_lines = section("老朽化状況", block_lines)
+            usage_lines = section("利用状況", block_lines)
+            cost_lines = section("コスト状況", block_lines)
 
             aging = parse_aging_table(aging_lines)
             usage = parse_usage_table(usage_lines)
