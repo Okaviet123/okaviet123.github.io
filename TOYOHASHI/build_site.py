@@ -13,7 +13,9 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 SITE = ROOT / "SITE"
 
-AUTHOR_NAME = "yy(from THE CYBORGS)"
+AUTHOR_NAME = "【実名をここに】"  # かなこさん確認用のリポジトリ側は常にプレースホルダーのまま。
+# 外部共有(Usutakuさん向け等)の実名版は、build_site.pyをこのまま使わず、
+# AUTHOR_NAMEを一時的に上書きした別ビルドとして生成する(このファイルへは反映しない)。
 REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
 INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
 IS_PUBLISHED = False  # 2026-08-10になったらTrueにする。それまでは常に「公開予定」と表示
