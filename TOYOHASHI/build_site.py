@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 SITE = ROOT / "SITE"
 
-AUTHOR_NAME = "【実名をここに】"  # 公開前に必ず差し替えること
+AUTHOR_NAME = "yy(from THE CYBORGS)"
 REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
 INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
 IS_PUBLISHED = False  # 2026-08-10になったらTrueにする。それまでは常に「公開予定」と表示
