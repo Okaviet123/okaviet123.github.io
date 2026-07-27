@@ -167,6 +167,25 @@ CSS = """
   .age-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
     font-size:.78rem; color:var(--ink-2); margin:0 0 14px; }
   .age-legend .age-pill { margin-right:5px; }
+
+  /* ---- KPIグリッド(数字を畳みかける導入) ---- */
+  .kpi-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;
+    background:var(--border); border:1px solid var(--border); border-radius:10px;
+    overflow:hidden; margin-bottom:20px; }
+  .kpi-tile { background:var(--surface-1); padding:16px 14px; min-width:0; }
+  .kpi-eyebrow { font-size:.72rem; font-weight:700; letter-spacing:.02em;
+    color:var(--ink-muted); margin:0 0 4px; }
+  .kpi-value { font-size:1.8rem; font-weight:700; line-height:1.1; margin:0; }
+  .kpi-value small { font-size:1rem; font-weight:600; }
+  .kpi-note { font-size:.74rem; color:var(--ink-2); margin:4px 0 0; line-height:1.5; }
+  .kpi-tile.accent { background:color-mix(in srgb, var(--s2) 10%, var(--surface-1)); }
+  .kpi-tile.accent .kpi-eyebrow { color:var(--s2); }
+  .kpi-tile.accent .kpi-value { color:var(--s2); }
+  .chart-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; }
+  @media (max-width: 720px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-row { grid-template-columns: 1fr; }
+  }
 """
 
 TIP_JS = """
@@ -348,10 +367,43 @@ def build_index():
 <div class="card">
   <p class="hero-label">今後30年間で、施設の維持・更新に必要なお金のうち</p>
   <p class="hero">約1,124<small>億円が不足</small></p>
-  <p class="hero-note">必要額 約4,392億円に対し、用意できる見込みは約3,268億円（約26%不足）。
-  市の結論は「施設の延べ床面積を30年間で20%程度削減する」。
-  ——豊橋市公共施設等総合管理計画2026-2055（令和8年3月）p.52-53</p>
+  <p class="hero-note">——豊橋市公共施設等総合管理計画2026-2055（令和8年3月）p.52-53</p>
 </div>
+
+<div class="kpi-grid">
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">必要な費用（30年累計）</p>
+    <p class="kpi-value">4,392<small>億円</small></p>
+    <p class="kpi-note">p.52-53</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">用意できる費用</p>
+    <p class="kpi-value">3,268<small>億円</small></p>
+    <p class="kpi-note">2024年度実績108.9億円/年×30年</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">市の削減目標</p>
+    <p class="kpi-value">20<small>%程度</small></p>
+    <p class="kpi-note">延べ床面積を30年で</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">延べ床面積のうち</p>
+    <p class="kpi-value">66<small>%</small></p>
+    <p class="kpi-note">が築40年以上（390施設中）</p>
+  </div>
+  <div class="kpi-tile accent">
+    <p class="kpi-eyebrow">3計画に意見を出したのは</p>
+    <p class="kpi-value">7<small>人</small></p>
+    <p class="kpi-note">豊橋市民 約36.6万人のうち（延べ）</p>
+  </div>
+  <div class="kpi-tile accent">
+    <p class="kpi-eyebrow">施設保全計画への意見</p>
+    <p class="kpi-value">0<small>人</small></p>
+    <p class="kpi-note">意見募集期間中、提出者ゼロ</p>
+  </div>
+</div>
+<p class="chart-sub" style="margin:-8px 0 20px">この計画がどう決まったか——上のオレンジ2つの意味は
+<a href="#ikenboshu">「この計画に、意見を出した人は何人いたか」</a>で詳しく見られます。</p>
 
 <div class="card">
   <p class="chart-title">あなたの校区は、この416施設の中でどうなっているか</p>
@@ -366,41 +418,41 @@ def build_index():
   </p>
 </div>
 
-<div class="card">
-  <p class="chart-title">必要なお金と、用意できるお金（30年間の累計・建物系施設）</p>
-  <p class="chart-sub">上段: 維持・更新に必要な費用の内訳 ／
-  下段: 現在の支出ペース（2024年度実績 約108.9億円/年）を30年続けた場合</p>
-  {core_figure_svg()}
-  <div class="legend">
-    <span style="--sw: var(--s1)">更新等（建て替え）</span>
-    <span style="--sw: var(--s2)">改修（大規模修繕）</span>
-    <span style="--sw: var(--s3)">維持管理・修繕</span>
-    <span style="--sw: var(--ctx)">用意できる費用</span>
+<div class="chart-row">
+  <div class="card">
+    <p class="chart-title">必要なお金と、用意できるお金</p>
+    <p class="chart-sub">上段: 内訳／下段: 現在の支出ペースを30年続けた場合</p>
+    {core_figure_svg()}
+    <div class="legend">
+      <span style="--sw: var(--s1)">更新等（建て替え）</span>
+      <span style="--sw: var(--s2)">改修（大規模修繕）</span>
+      <span style="--sw: var(--s3)">維持管理・修繕</span>
+      <span style="--sw: var(--ctx)">用意できる費用</span>
+    </div>
+    <details><summary>データ表を開く</summary>
+      <div class="tblwrap"><table>
+        <tr><th>項目</th><th>金額（億円）</th></tr>
+        <tr><td>更新等（建て替え）</td><td>約1,551</td></tr>
+        <tr><td>改修（大規模修繕）</td><td>約2,000</td></tr>
+        <tr><td>維持管理・修繕</td><td>約841</td></tr>
+        <tr><td><b>必要な費用 計</b></td><td><b>約4,392</b></td></tr>
+        <tr><td>用意できる費用（108.9億円/年×30年、計画の試算値）</td><td>約3,268</td></tr>
+        <tr><td><b>不足</b></td><td><b>約1,124（約26%）</b></td></tr>
+      </table></div>
+    </details>
   </div>
-  <details><summary>データ表を開く</summary>
-    <div class="tblwrap"><table>
-      <tr><th>項目</th><th>金額（億円）</th></tr>
-      <tr><td>更新等（建て替え）</td><td>約1,551</td></tr>
-      <tr><td>改修（大規模修繕）</td><td>約2,000</td></tr>
-      <tr><td>維持管理・修繕</td><td>約841</td></tr>
-      <tr><td><b>必要な費用 計</b></td><td><b>約4,392</b></td></tr>
-      <tr><td>用意できる費用（108.9億円/年×30年、計画の試算値）</td><td>約3,268</td></tr>
-      <tr><td><b>不足</b></td><td><b>約1,124（約26%）</b></td></tr>
-    </table></div>
-  </details>
-</div>
 
-<div class="card">
-  <p class="chart-title">その建物たちは、いつ建てられたか（建築年代別の延べ床面積）</p>
-  <p class="chart-sub">全416施設のうち建築年度が公表されている390施設。
-  1960〜70年代築（築47年以上）が全体の延べ床面積の半分を占める</p>
-  {nendai_svg(nendai)}
-  <details><summary>データ表を開く</summary>
-    <div class="tblwrap"><table>
-      <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
-      {nendai_rows}
-    </table></div>
-  </details>
+  <div class="card">
+    <p class="chart-title">その建物たちは、いつ建てられたか</p>
+    <p class="chart-sub">建築年代別の延べ床面積。1970年代築が最大</p>
+    {nendai_svg(nendai)}
+    <details><summary>データ表を開く</summary>
+      <div class="tblwrap"><table>
+        <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
+        {nendai_rows}
+      </table></div>
+    </details>
+  </div>
 </div>
 
 <h2>裏付け表</h2>
@@ -410,10 +462,11 @@ def build_index():
   <li><a href="shisetsu.html">全416施設の一覧</a> — 実名・築年数・2024年度の支出・利用者数（絞り込み可）</li>
 </ul>
 
-<h2>この計画に、意見を出した人は何人いたか</h2>
+<h2 id="ikenboshu">この計画に、意見を出した人は何人いたか</h2>
 <div class="card">
-  <p class="chart-sub" style="margin-bottom:10px">豊橋市はこの3つの計画を決める前に、パブリックコメント（意見募集）を
-  行いました。結果は市が公表しています（期間はいずれも令和8年1月19日〜2月20日、すでに終了）。</p>
+  <p class="chart-sub" style="margin-bottom:10px">上のオレンジの2枠の内訳です。豊橋市はこの3つの計画を決める前に、
+  パブリックコメント（意見募集）を行いました。結果は市が公表しています
+  （期間はいずれも令和8年1月19日〜2月20日、すでに終了）。</p>
   <div class="tblwrap"><table>
     <tr><th>計画</th><th>意見提出者数</th><th>意見提出数</th></tr>
     <tr><td>公共施設等総合管理計画2026-2055</td><td>3人</td><td>6件</td></tr>
