@@ -1,0 +1,234 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>豊橋市の公共施設 これから30年のお金の地図（中核図表・草稿）</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --page: #f9f9f7;
+    --ink-1: #0b0b0b; --ink-2: #52514e; --ink-muted: #898781;
+    --grid: #e1e0d9; --baseline: #c3c2b7;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+    --ctx: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page); color: var(--ink-1);
+    margin: 0 auto; max-width: 860px; padding: 24px 16px 48px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --page: #0d0d0d;
+      --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+      --grid: #2c2c2a; --baseline: #383835;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+      --ctx: #52514e;
+      --border: rgba(255,255,255,0.10);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --page: #0d0d0d;
+    --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --grid: #2c2c2a; --baseline: #383835;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --ctx: #52514e;
+    --border: rgba(255,255,255,0.10);
+  }
+  .viz-root h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  .viz-root .sub { color: var(--ink-2); font-size: .9rem; margin: 0 0 24px; }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; margin-bottom: 20px;
+  }
+  .hero-label { font-size: .85rem; color: var(--ink-2); margin: 0; }
+  .hero { font-size: 52px; font-weight: 700; line-height: 1.15; margin: 2px 0 0; }
+  .hero small { font-size: 22px; font-weight: 600; }
+  .hero-note { font-size: .85rem; color: var(--ink-2); margin: 6px 0 0; }
+  .chart-title { font-size: 1rem; font-weight: 600; margin: 0 0 2px; }
+  .chart-sub { font-size: .82rem; color: var(--ink-2); margin: 0 0 14px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--ink-2); margin: 10px 0 0; }
+  .legend span::before {
+    content: ""; display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; margin-right: 6px; vertical-align: -1px;
+    background: var(--sw);
+  }
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: inherit; }
+  .axis-t { fill: var(--ink-muted); font-size: 11px; }
+  .lab-t { fill: var(--ink-2); font-size: 12px; }
+  .val-t { fill: var(--ink-1); font-size: 12px; font-weight: 600; }
+  .seg-t { fill: #ffffff; font-size: 11.5px; font-weight: 600; }
+  .bar-seg, .col { cursor: default; }
+  .bar-seg:hover, .col:hover { opacity: .85; }
+  .tip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--surface-1); color: var(--ink-1);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: .8rem; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  }
+  details { margin-top: 12px; font-size: .85rem; }
+  details summary { cursor: pointer; color: var(--ink-2); }
+  table { border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  th, td { border-bottom: 1px solid var(--grid); padding: 4px 12px 4px 0; text-align: right; font-size: .82rem; }
+  th:first-child, td:first-child { text-align: left; }
+  .src { font-size: .78rem; color: var(--ink-muted); margin-top: 14px; line-height: 1.6; }
+  .src a { color: inherit; }
+</style>
+<div class="viz-root">
+  <h1>豊橋市の建物系公共施設 — これから30年のお金の地図</h1>
+  <p class="sub">市が自ら公表した試算の「翻訳」。数字はすべて豊橋市の公式資料から。（草稿 v0.1）</p>
+
+  <div class="card">
+    <p class="hero-label">今後30年間で、施設の維持・更新に必要なお金のうち</p>
+    <p class="hero">約1,124<small>億円が不足</small></p>
+    <p class="hero-note">必要額 約4,392億円に対し、用意できる見込みは約3,268億円（約26%不足）。
+    市の結論は「施設の延べ床面積を30年間で20%程度削減する」。</p>
+  </div>
+
+  <div class="card">
+    <p class="chart-title">必要なお金と、用意できるお金（30年間の累計・建物系施設）</p>
+    <p class="chart-sub">上段: 維持・更新に必要な費用の内訳 ／ 下段: 現在の支出ペース（2024年度実績 約108.9億円/年）を30年続けた場合</p>
+    <svg viewBox="0 0 800 190" role="img" aria-label="必要4392億円に対し用意できるのは3268億円で1124億円不足">
+      <!-- スケール: 0-4600億円 → x=140..780 (640px), 1億円=0.13913px -->
+      <g class="axis-t">
+        <text x="140" y="182" text-anchor="middle">0</text>
+        <text x="279" y="182" text-anchor="middle">1,000</text>
+        <text x="418" y="182" text-anchor="middle">2,000</text>
+        <text x="557" y="182" text-anchor="middle">3,000</text>
+        <text x="696" y="182" text-anchor="middle">4,000億円</text>
+      </g>
+      <g stroke="var(--grid)" stroke-width="1">
+        <line x1="279" y1="30" x2="279" y2="168"/><line x1="418" y1="30" x2="418" y2="168"/>
+        <line x1="557" y1="30" x2="557" y2="168"/><line x1="696" y1="30" x2="696" y2="168"/>
+      </g>
+      <line x1="140" y1="30" x2="140" y2="168" stroke="var(--baseline)" stroke-width="1"/>
+
+      <!-- 上段: 必要な費用 4,392 (更新等1551 / 改修2000 / 維持841) 2px gap -->
+      <text class="lab-t" x="132" y="66" text-anchor="end">必要な費用</text>
+      <g>
+        <rect class="bar-seg" data-tip="更新等（建て替え）: 約1,551億円" x="140" y="48" width="215.8" height="28" fill="var(--s1)" rx="0"/>
+        <rect class="bar-seg" data-tip="改修（大規模修繕）: 約2,000億円" x="357.8" y="48" width="278.3" height="28" fill="var(--s2)"/>
+        <rect class="bar-seg" data-tip="維持管理・修繕: 約841億円" x="638.1" y="48" width="115.0" height="28" fill="var(--s3)" rx="4"/>
+        <text class="seg-t" x="247" y="66" text-anchor="middle">1,551</text>
+        <text class="seg-t" x="497" y="66" text-anchor="middle">2,000</text>
+        <text class="seg-t" x="695" y="66" text-anchor="middle">841</text>
+        <text class="val-t" x="761" y="66">4,392</text>
+      </g>
+
+      <!-- 下段: 用意できる 3,268 (コンテキスト色) -->
+      <text class="lab-t" x="132" y="128" text-anchor="end">用意できる</text>
+      <rect class="bar-seg" data-tip="2024年度実績 約108.9億円/年 × 30年 = 約3,268億円" x="140" y="110" width="454.7" height="28" fill="var(--ctx)" rx="4"/>
+      <text class="val-t" x="602" y="128">3,268</text>
+
+      <!-- 不足ブラケット: 3268..4392 -->
+      <g stroke="var(--ink-2)" fill="none" stroke-width="1.2">
+        <line x1="594.7" y1="88" x2="594.7" y2="98"/>
+        <line x1="751.1" y1="88" x2="751.1" y2="98"/>
+        <line x1="594.7" y1="93" x2="751.1" y2="93"/>
+      </g>
+      <text class="lab-t" x="673" y="106" text-anchor="middle" style="font-weight:600">不足 約1,124億円</text>
+      <line x1="594.7" y1="30" x2="594.7" y2="168" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 3"/>
+    </svg>
+    <div class="legend">
+      <span style="--sw: var(--s1)">更新等（建て替え）</span>
+      <span style="--sw: var(--s2)">改修（大規模修繕）</span>
+      <span style="--sw: var(--s3)">維持管理・修繕</span>
+      <span style="--sw: var(--ctx)">用意できる費用</span>
+    </div>
+    <details>
+      <summary>データ表を開く</summary>
+      <table>
+        <tr><th>項目</th><th>金額（億円）</th></tr>
+        <tr><td>更新等（建て替え）</td><td>約1,551</td></tr>
+        <tr><td>改修（大規模修繕）</td><td>約2,000</td></tr>
+        <tr><td>維持管理・修繕</td><td>約841</td></tr>
+        <tr><td><b>必要な費用 計</b></td><td><b>約4,392</b></td></tr>
+        <tr><td>用意できる費用（108.9億円/年×30年）</td><td>約3,268</td></tr>
+        <tr><td><b>不足</b></td><td><b>約1,124（約26%）</b></td></tr>
+      </table>
+    </details>
+  </div>
+
+  <div class="card">
+    <p class="chart-title">その建物たちは、いつ建てられたか（建築年代別の延べ床面積）</p>
+    <p class="chart-sub">全416施設のうち建築年度が公表されている390施設。1960〜70年代築（築47年以上）が全体の延べ床面積の半分を占める</p>
+    <svg viewBox="0 0 800 240" role="img" aria-label="建築年代別延床面積。1970年代が42.3万平米で最大">
+      <!-- y: 0-45万㎡ → 190px, x: 10列 -->
+      <g stroke="var(--grid)" stroke-width="1">
+        <line x1="60" y1="26" x2="780" y2="26"/><line x1="60" y1="87" x2="780" y2="87"/>
+        <line x1="60" y1="148" x2="780" y2="148"/>
+      </g>
+      <g class="axis-t">
+        <text x="54" y="30" text-anchor="end">45万㎡</text>
+        <text x="54" y="91" text-anchor="end">30万㎡</text>
+        <text x="54" y="152" text-anchor="end">15万㎡</text>
+      </g>
+      <line x1="60" y1="209" x2="780" y2="209" stroke="var(--baseline)" stroke-width="1"/>
+      <!-- 幅44px, ピッチ72px, x0=74 : h = m2/450000*183 -->
+      <g fill="var(--s1)">
+        <rect class="col" data-tip="1930年代: 1施設 / 0.3万㎡" x="74"  y="207.8" width="44" height="1.2" rx="1"/>
+        <rect class="col" data-tip="1940年代: 1施設 / 0.1万㎡" x="146" y="208.6" width="44" height="0.4" rx="1"/>
+        <rect class="col" data-tip="1950年代: 2施設 / 0.6万㎡" x="218" y="206.5" width="44" height="2.5" rx="1"/>
+        <rect class="col" data-tip="1960年代: 39施設 / 22.6万㎡" x="290" y="117.1" width="44" height="91.9" rx="4"/>
+        <rect class="col" data-tip="1970年代: 81施設 / 42.3万㎡" x="362" y="37.0"  width="44" height="172.0" rx="4"/>
+        <rect class="col" data-tip="1980年代: 108施設 / 25.5万㎡" x="434" y="105.3" width="44" height="103.7" rx="4"/>
+        <rect class="col" data-tip="1990年代: 53施設 / 19.2万㎡" x="506" y="130.9" width="44" height="78.1" rx="4"/>
+        <rect class="col" data-tip="2000年代: 66施設 / 9.1万㎡" x="578" y="172.0" width="44" height="37.0" rx="4"/>
+        <rect class="col" data-tip="2010年代: 32施設 / 6.2万㎡" x="650" y="183.6" width="44" height="25.4" rx="4"/>
+        <rect class="col" data-tip="2020年代: 7施設 / 1.6万㎡" x="722" y="202.6" width="44" height="6.4" rx="4"/>
+      </g>
+      <text class="val-t" x="384" y="30" text-anchor="middle">42.3万㎡</text>
+      <g class="axis-t">
+        <text x="96"  y="226" text-anchor="middle">1930s</text>
+        <text x="168" y="226" text-anchor="middle">40s</text>
+        <text x="240" y="226" text-anchor="middle">50s</text>
+        <text x="312" y="226" text-anchor="middle">60s</text>
+        <text x="384" y="226" text-anchor="middle">70s</text>
+        <text x="456" y="226" text-anchor="middle">80s</text>
+        <text x="528" y="226" text-anchor="middle">90s</text>
+        <text x="600" y="226" text-anchor="middle">2000s</text>
+        <text x="672" y="226" text-anchor="middle">10s</text>
+        <text x="744" y="226" text-anchor="middle">20s</text>
+      </g>
+    </svg>
+    <details>
+      <summary>データ表を開く</summary>
+      <table>
+        <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
+        <tr><td>1930年代</td><td>1</td><td>2,951㎡</td></tr>
+        <tr><td>1940年代</td><td>1</td><td>1,053㎡</td></tr>
+        <tr><td>1950年代</td><td>2</td><td>6,117㎡</td></tr>
+        <tr><td>1960年代</td><td>39</td><td>225,903㎡</td></tr>
+        <tr><td>1970年代</td><td>81</td><td>422,997㎡</td></tr>
+        <tr><td>1980年代</td><td>108</td><td>254,957㎡</td></tr>
+        <tr><td>1990年代</td><td>53</td><td>191,988㎡</td></tr>
+        <tr><td>2000年代</td><td>66</td><td>90,844㎡</td></tr>
+        <tr><td>2010年代</td><td>32</td><td>62,397㎡</td></tr>
+        <tr><td>2020年代</td><td>7</td><td>15,793㎡</td></tr>
+      </table>
+    </details>
+  </div>
+
+  <p class="src">
+    出典:
+    30年収支試算・費用内訳・延べ床面積20%削減目標 —
+    <a href="https://www.city.toyohashi.lg.jp/64295.htm">豊橋市公共施設等総合管理計画2026-2055</a>（令和8年3月）p.52-53 ／
+    2024年度維持・更新費実績（約108.9億円）— 同計画 p.34 ／
+    建築年代別集計 — <a href="https://www.city.toyohashi.lg.jp/34019.htm">豊橋市公共施設白書2025</a> 個別票（全416施設中、建築年度公表の390施設を集計）。
+    金額はいずれも市の試算・公表値。集計スクリプトと元データは公開リポジトリに掲載。
+  </p>
+
+  <div class="tip" id="tip"></div>
+</div>
+<script>
+  const tip = document.getElementById("tip");
+  document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      tip.textContent = el.dataset.tip;
+      tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 240) + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.style.display = "none");
+  });
+</script>
