@@ -13,11 +13,21 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 SITE = ROOT / "SITE"
 
-AUTHOR_NAME = "【実名をここに】"  # かなこさん確認用のリポジトリ側は常にプレースホルダーのまま。
-# 外部共有(Usutakuさん向け等)の実名版は、build_site.pyをこのまま使わず、
-# AUTHOR_NAMEを一時的に上書きした別ビルドとして生成する(このファイルへは反映しない)。
+AUTHOR_NAME = "yy(from THE CYBORGS)"
 REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
-INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
+
+# リポジトリの既定値 = 外部公開仕様(実名・バナーなし)。
+# Cloudflare PagesをこのリポジトリのSITE/に直結して自動デプロイしているため、
+# ここが「今Cloudflareに出ている内容」の実体になる。
+#
+# かなこさん確認用(バナーあり・プレースホルダー名)が必要なときは、この既定値を
+# 書き換えず、以下のように一時上書きして別ディレクトリに出力すること:
+#   import build_site
+#   build_site.INCLUDE_VERIFY_BANNER = True
+#   build_site.AUTHOR_NAME = "【実名をここに】"
+#   build_site.SITE = Path("<一時ディレクトリ>")
+#   build_site.build_index(); build_site.build_kouku(); build_site.build_shisetsu()
+INCLUDE_VERIFY_BANNER = False
 IS_PUBLISHED = False  # 2026-08-10になったらTrueにする。それまでは常に「公開予定」と表示
 BASE_YEAR = 2026  # 築年数の基準年(analyze_shisetsu.pyのBASE_YEARと合わせる)
 
