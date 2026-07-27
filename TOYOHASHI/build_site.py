@@ -156,7 +156,7 @@ def core_figure_svg():
   {''.join(parts)}
   <text class="val-t" x="{need_end+8:.0f}" y="66">4,392</text>
   <text class="lab-t" x="{x0-8}" y="128" text-anchor="end">用意できる</text>
-  <rect class="bar-seg" data-tip="2024年度実績 約108.9億円/年 × 30年 = 約3,268億円"
+  <rect class="bar-seg" data-tip="2024年度実績 約108.9億円/年 × 30年 → 約3,268億円（計画の試算値）"
     x="{x0}" y="110" width="{avail_end-x0:.1f}" height="28" fill="var(--ctx)" rx="4"/>
   <text class="val-t" x="{avail_end+8:.0f}" y="128">3,268</text>
   <g stroke="var(--ink-2)" fill="none" stroke-width="1.2">
@@ -248,7 +248,7 @@ def build_index():
       <tr><td>改修（大規模修繕）</td><td>約2,000</td></tr>
       <tr><td>維持管理・修繕</td><td>約841</td></tr>
       <tr><td><b>必要な費用 計</b></td><td><b>約4,392</b></td></tr>
-      <tr><td>用意できる費用（108.9億円/年×30年）</td><td>約3,268</td></tr>
+      <tr><td>用意できる費用（108.9億円/年×30年、計画の試算値）</td><td>約3,268</td></tr>
       <tr><td><b>不足</b></td><td><b>約1,124（約26%）</b></td></tr>
     </table></div>
   </details>
@@ -281,7 +281,9 @@ def build_index():
   試算対象は建物系施設（インフラ系施設、上下水道局、市民病院を除く）。
   2024年度維持・更新費実績（約108.9億円）は同計画p.34。<br>
   施設別データ（延べ床面積・建築年度・収支・利用者数）—
-  <a href="https://www.city.toyohashi.lg.jp/34019.htm">豊橋市公共施設白書2025</a> 個別票。<br>
+  <a href="https://www.city.toyohashi.lg.jp/34019.htm">豊橋市公共施設白書2025</a> 個別票。
+  白書の対象は公称417施設（軟式庭球場①・②が1枚の個別票にまとめられているため、
+  個別票は416票。本サイトの「416施設」は個別票の数）。<br>
   すべての取得ファイルのURL・取得日時・ハッシュ値、および集計スクリプトは
   <a href="https://github.com/Okaviet123/okaviet123.github.io/tree/main/TOYOHASHI">公開リポジトリ</a>に掲載。
   数字の誤りを見つけた方はリポジトリのIssueでお知らせください。確認のうえ訂正します。
@@ -290,7 +292,7 @@ def build_index():
     (SITE / "index.html").write_text(
         page("豊橋市の公共施設 これから30年のお金の地図", body,
              "豊橋市の公式資料から: 公共施設の維持・更新は30年で約1,124億円不足。"
-             "市は延べ床面積20%削減を目標に。全416施設の実名データ付き。"),
+             "市は延べ床面積20%程度削減を目標に。全416施設の実名データ付き。"),
         encoding="utf-8")
     print("wrote index.html")
 
@@ -341,6 +343,8 @@ def build_shisetsu():
 <h1>豊橋市の公共施設 全{len(rows)}施設</h1>
 <p class="sub">出典: 豊橋市公共施設白書2025 個別票。金額は2024（令和6）年度。
 「－」は原本に記載がないもの（複合施設内の施設など）。
+建築年度は敷地内で最も古い棟の建設年度（本体より古い付属棟の年になる場合がある。
+例: 総合体育館の本体は1988年だが、敷地内ポンプ場の1987年を表示）。
 市営住宅の支出は全住宅の合計が各施設に記載されているため、住宅間の比較には使えない。</p>
 <input type="search" id="q" placeholder="施設名・分類・校区で絞り込み（例: 市民館 / 牛川 / スポーツ）">
 <div class="card tblwrap">

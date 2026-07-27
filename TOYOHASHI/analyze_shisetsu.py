@@ -57,7 +57,7 @@ def main():
     write("derived_kouku_summary.csv",
           ["小学校区", "施設数", "延床面積合計_m2", "築40年以上_施設数",
            "築40年以上_延床m2", "築40年以上_延床比率_%"],
-          [[k, v["n"], round(v["m2"], 1), v["old_n"], round(v["old_m2"], 1),
+          [[k, v["n"], f"{v['m2']:.4f}", v["old_n"], f"{v['old_m2']:.4f}",
             round(v["old_m2"] / v["m2"] * 100, 1) if v["m2"] else ""]
            for k, v in sorted(kouku.items(), key=lambda x: -x[1]["m2"])])
 
