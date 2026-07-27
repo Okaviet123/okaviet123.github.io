@@ -5,6 +5,11 @@
 - SITE/index.html    表紙 + 中核図表(30年収支ギャップ・築年代分布) + 出典
 - SITE/kouku.html    校区別サマリー表(52校区)
 - SITE/shisetsu.html 全416施設の一覧表(テキスト絞り込み付き)
+
+かなこさん確認用(バナーあり・プレースホルダー名)を作るには:
+  python3 -c "import build_site; build_site.build_kanako_copy()"
+→ SITE_KANAKO/ 配下に同じ3ページを生成する。SITE/ (外部公開・Cloudflare連携先)
+  には影響しない。
 """
 import csv
 import html as H
@@ -561,6 +566,19 @@ def build_shisetsu():
     (SITE / "shisetsu.html").write_text(
         page("豊橋市の公共施設 全施設一覧", body), encoding="utf-8")
     print("wrote shisetsu.html")
+
+
+def build_kanako_copy():
+    """SITE_KANAKO/ に、確認バナーあり・実名プレースホルダーの版を生成する。
+    SITE/(外部公開・Cloudflare連携先)には一切影響しない。"""
+    global INCLUDE_VERIFY_BANNER, AUTHOR_NAME, SITE
+    INCLUDE_VERIFY_BANNER = True
+    AUTHOR_NAME = "【実名をここに】"
+    SITE = ROOT / "SITE_KANAKO"
+    SITE.mkdir(exist_ok=True)
+    build_index()
+    build_kouku()
+    build_shisetsu()
 
 
 if __name__ == "__main__":
