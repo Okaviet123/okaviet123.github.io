@@ -93,6 +93,25 @@
   .age-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
     font-size:.78rem; color:var(--ink-2); margin:0 0 14px; }
   .age-legend .age-pill { margin-right:5px; }
+
+  /* ---- KPIグリッド(数字を畳みかける導入) ---- */
+  .kpi-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;
+    background:var(--border); border:1px solid var(--border); border-radius:10px;
+    overflow:hidden; margin-bottom:20px; }
+  .kpi-tile { background:var(--surface-1); padding:16px 14px; min-width:0; }
+  .kpi-eyebrow { font-size:.72rem; font-weight:700; letter-spacing:.02em;
+    color:var(--ink-muted); margin:0 0 4px; }
+  .kpi-value { font-size:1.8rem; font-weight:700; line-height:1.1; margin:0; }
+  .kpi-value small { font-size:1rem; font-weight:600; }
+  .kpi-note { font-size:.74rem; color:var(--ink-2); margin:4px 0 0; line-height:1.5; }
+  .kpi-tile.accent { background:color-mix(in srgb, var(--s2) 10%, var(--surface-1)); }
+  .kpi-tile.accent .kpi-eyebrow { color:var(--s2); }
+  .kpi-tile.accent .kpi-value { color:var(--s2); }
+  .chart-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; }
+  @media (max-width: 720px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-row { grid-template-columns: 1fr; }
+  }
 </style></head>
 <body>
 
