@@ -1,0 +1,3 @@
+都道府県コード,都道府県名,市町村コード,市町村名,ディレクトリ,状態,備考
+23,愛知県,23201,豊橋市,TOYOHASHI,作業中,claude/toyohashi-public-info-report-uln82eブランチでSITE構築済み。mainへの統合待ちのためこのブランチのworking treeにはTOYOHASHI/が存在せず、build_map.pyは現時点でSITE検出不可(未公開扱い)。ブランチ統合後にbuild_map.py再実行でreport/23201/へ反映される
+23,愛知県,23214,蒲郡市,GAMAGORI,作業中,S1(偵察)完了。総合管理計画PDF・白書PDFの直リンクは確認済み。決算カード等の実データ取得はネットワークポリシー許可待ち(GAMAGORI/CLAUDE.md参照)。SITE未生成

@@ -1,9 +1,16 @@
 # GAMAGORI — 蒲郡市 公開情報レポート
 
 このディレクトリは `okaviet123.github.io`（個人のGitHub Pagesリポジトリ）内の
-サブプロジェクト。`TOYOHASHI/SKILLS/muni-facility-report` スキルの手順に従い、
+サブプロジェクト。リポジトリ直下 `SKILLS/muni-facility-report`（正典。
+`TOYOHASHI/SKILLS/` 配下にも同内容の古いコピーが残っているのは、豊橋#1の
+ブランチがまだmainに統合されていないための重複）のスキルの手順に従い、
 豊橋市#1と同じ構成で作る2市目。蒲郡市の公開情報を市民が読める形に「翻訳」し、
 実名で公開するレポートシリーズの1本。
+
+蒲郡市は `MUNICIPALITIES.csv`（リポジトリ直下、市町村コード23214）に
+登録済み。`SITE/` を作ったら状態列を「公開」にして `map/build_map.py` を
+再実行すると、`map/index.html`（日本地図の入口ページ）からリンクされる
+（詳細は `SKILLS/muni-facility-report/references/publish_map.md`）。
 
 ## テーマ（S1偵察 2026-07-27 時点の暫定方針）
 
