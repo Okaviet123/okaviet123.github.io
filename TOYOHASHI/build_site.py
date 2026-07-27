@@ -16,6 +16,30 @@ SITE = ROOT / "SITE"
 AUTHOR_NAME = "【実名をここに】"  # 公開前に必ず差し替えること
 REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
 INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
+BASE_YEAR = 2026  # 築年数の基準年(analyze_shisetsu.pyのBASE_YEARと合わせる)
+
+# 築年数の色分け帯。「40年」は中核図表の66%統計と同じ閾値を使い、
+# レポートの主題(30年で延床20%削減)と表がつながるようにする。
+# 色はdataviz skillの sequential blue ramp(references/palette.md)のステップそのもの。
+AGE_BANDS = [
+    (0, 20, "#86b6ef", "#0b0b0b", "築20年未満"),
+    (20, 40, "#5598e7", "#0b0b0b", "築20〜39年"),
+    (40, 60, "#2a78d6", "#ffffff", "築40〜59年"),
+    (60, 80, "#1c5cab", "#ffffff", "築60〜79年"),
+    (80, 999, "#104281", "#ffffff", "築80年以上"),
+]
+
+
+def age_pill(built_year):
+    """建築年度→色付きピル(築年数バッジ)のHTMLを返す。年度不明なら灰色。"""
+    if not built_year:
+        return '<span class="age-pill age-pill-na">不明</span>'
+    age = BASE_YEAR - int(built_year)
+    for lo, hi, bg, fg, _ in AGE_BANDS:
+        if lo <= age < hi:
+            return (f'<span class="age-pill" style="background:{bg};color:{fg}">'
+                    f'{age}年</span>')
+    return '<span class="age-pill age-pill-na">不明</span>'
 
 # 確認用の原本PDF一覧: (資料名, 使うページ, 直接URL)
 # ダウンロード元がすべて豊橋市の公式サイトそのものであること(こちらで加工した
@@ -88,7 +112,7 @@ CSS = """
           font-variant-numeric:tabular-nums; width:100%; }
   th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
           text-align:right; font-size:.82rem; white-space:nowrap; }
-  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; min-width:9em; }
   th { color:var(--ink-2); font-weight:600; }
   .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
   .src a, .nav a { color:inherit; }
@@ -117,6 +141,14 @@ CSS = """
     margin:22px 0 28px; position:relative; }
   .vb-divider::before, .vb-divider::after { content:""; display:block; height:1px;
     background:var(--grid); margin:10px 0; }
+
+  /* ---- 築年数ピル(全施設一覧) ---- */
+  .age-pill { display:inline-block; padding:2px 8px; border-radius:999px;
+    font-size:.76rem; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .age-pill-na { background:var(--grid); color:var(--ink-muted); }
+  .age-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
+    font-size:.78rem; color:var(--ink-2); margin:0 0 14px; }
+  .age-legend .age-pill { margin-right:5px; }
 """
 
 TIP_JS = """
@@ -418,11 +450,15 @@ def build_shisetsu():
         f'<td>{H.escape(r["施設分類_大分類"])}</td>'
         f'<td>{H.escape(r["小学校区"])}</td>'
         f'<td>{r["建築年度_最古棟"] or "－"}</td>'
+        f'<td>{age_pill(r["建築年度_最古棟"])}</td>'
         f'<td>{fmt(r["延べ床面積合計_m2"])}</td>'
         f'<td>{fmt(r["支出2024_円"])}</td>'
         f'<td>{fmt(r["利用者数2024_人"])}</td>'
         f'<td>{fmt(r["市民1人当たりコスト2024_円"])}</td></tr>'
         for r in rows)
+    age_legend = "".join(
+        f'<span><span class="age-pill" style="background:{bg};color:{fg}">例</span>{label}</span>'
+        for _, _, bg, fg, label in AGE_BANDS)
     body = f"""
 <p class="nav"><a href="index.html">← お金の地図（トップ）</a></p>
 <h1>豊橋市の公共施設 全{len(rows)}施設</h1>
@@ -430,12 +466,23 @@ def build_shisetsu():
 「－」は原本に記載がないもの（複合施設内の施設など）。
 建築年度は敷地内で最も古い棟の建設年度（本体より古い付属棟の年になる場合がある。
 例: 総合体育館の本体は1988年だが、敷地内ポンプ場の1987年を表示）。
-市営住宅の支出は全住宅の合計が各施設に記載されているため、住宅間の比較には使えない。</p>
+市営住宅の支出は全住宅の合計が各施設に記載されているため、住宅間の比較には使えない。<br>
+<b>「市民1人あたり」とは</b>: その施設の年間支出を豊橋市の人口（約36.6万人）で割った金額。
+実際にその施設を使わない人も含めて全市民に案分した場合の負担額の目安で、
+利用者数が多い施設ほど小さくなる。個別票の「単位施設行政コスト」の数値をそのまま掲載。</p>
+
+<p class="sub" style="margin-top:-6px">
+<b>築年数の色</b>は、トップページの「30年で延べ床面積20%削減」という市の目標と
+同じ<b>築40年</b>を境に濃い色にしてある（40年以上＝青の濃い3色）。色は単に築年数を
+表すだけで、この一覧が削減対象を決めているわけではない。</p>
+<div class="age-legend">{age_legend}</div>
+
 <input type="search" id="q" placeholder="施設名・分類・校区で絞り込み（例: 市民館 / 牛川 / スポーツ）">
 <div class="card tblwrap">
 <table id="t">
-<tr><th>施設名</th><th>分類</th><th>校区</th><th>建築年度</th>
-<th>延べ床面積(㎡)</th><th>支出(円)</th><th>利用者数(人)</th><th>市民1人あたり(円)</th></tr>
+<tr><th>施設名</th><th>分類</th><th>校区</th><th>建築年度</th><th>築年数</th>
+<th>延べ床面積(㎡)</th><th>支出(円)</th><th>利用者数(人)</th>
+<th title="年間支出 ÷ 豊橋市人口。全市民に案分した場合の負担額の目安">市民1人あたり(円)</th></tr>
 {tr}
 </table>
 </div>
