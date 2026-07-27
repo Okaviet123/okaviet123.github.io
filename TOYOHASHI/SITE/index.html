@@ -56,7 +56,7 @@
           font-variant-numeric:tabular-nums; width:100%; }
   th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
           text-align:right; font-size:.82rem; white-space:nowrap; }
-  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; min-width:9em; }
   th { color:var(--ink-2); font-weight:600; }
   .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
   .src a, .nav a { color:inherit; }
@@ -85,6 +85,14 @@
     margin:22px 0 28px; position:relative; }
   .vb-divider::before, .vb-divider::after { content:""; display:block; height:1px;
     background:var(--grid); margin:10px 0; }
+
+  /* ---- 築年数ピル(全施設一覧) ---- */
+  .age-pill { display:inline-block; padding:2px 8px; border-radius:999px;
+    font-size:.76rem; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .age-pill-na { background:var(--grid); color:var(--ink-muted); }
+  .age-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
+    font-size:.78rem; color:var(--ink-2); margin:0 0 14px; }
+  .age-legend .age-pill { margin-right:5px; }
 </style></head>
 <body>
 
@@ -111,7 +119,7 @@
 <div class="vb-divider">↓ ここから下が、実際に公開するレポート本文です ↓</div>
 
 <h1>豊橋市の公共施設 — これから30年のお金の地図</h1>
-<p class="sub">豊橋市 公開情報の地図 #1（2026年8月10日公開）</p>
+<p class="sub">豊橋市 公開情報の地図 #1（2026年8月10日公開予定）</p>
 
 <p>【実名をここに】。豊橋で学んだ人間が、豊橋の公開情報を読む——
 このレポートは、市が自ら公表している計画書・白書・決算資料を、

@@ -16,6 +16,7 @@ SITE = ROOT / "SITE"
 AUTHOR_NAME = "【実名をここに】"  # 公開前に必ず差し替えること
 REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
 INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
+IS_PUBLISHED = False  # 2026-08-10になったらTrueにする。それまでは常に「公開予定」と表示
 BASE_YEAR = 2026  # 築年数の基準年(analyze_shisetsu.pyのBASE_YEARと合わせる)
 
 # 築年数の色分け帯。「40年」は中核図表の66%統計と同じ閾値を使い、
@@ -316,10 +317,11 @@ def build_index():
         f'<tr><td>{r["建築年代"]}</td><td>{r["施設数"]}</td>'
         f'<td>{fmt(r["延床面積合計_m2"], "㎡")}</td></tr>' for r in nendai)
     verify_banner = verify_banner_html() if INCLUDE_VERIFY_BANNER else ""
+    publish_label = "2026年8月10日公開" if IS_PUBLISHED else "2026年8月10日公開予定"
     body = f"""
 {verify_banner}
 <h1>豊橋市の公共施設 — これから30年のお金の地図</h1>
-<p class="sub">豊橋市 公開情報の地図 #1（2026年8月10日公開）</p>
+<p class="sub">豊橋市 公開情報の地図 #1（{publish_label}）</p>
 
 <p>{H.escape(AUTHOR_NAME)}。豊橋で学んだ人間が、豊橋の公開情報を読む——
 このレポートは、市が自ら公表している計画書・白書・決算資料を、
