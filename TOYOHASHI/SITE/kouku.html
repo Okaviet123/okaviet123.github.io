@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<title>校区別に見る 豊橋市の公共施設</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    --surface-1:#fcfcfb; --page:#f9f9f7; --ink-1:#0b0b0b; --ink-2:#52514e;
+    --ink-muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --ctx:#c3c2b7;
+    --border:rgba(11,11,11,0.10);
+    font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--page); color:var(--ink-1);
+    margin:0 auto; max-width:860px; padding:24px 16px 48px; line-height:1.75;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) body {
+      color-scheme:dark;
+      --surface-1:#1a1a19; --page:#0d0d0d; --ink-1:#fff; --ink-2:#c3c2b7;
+      --grid:#2c2c2a; --baseline:#383835;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ctx:#52514e;
+      --border:rgba(255,255,255,0.10);
+    }
+  }
+  h1 { font-size:1.45rem; margin:0 0 4px; line-height:1.4; }
+  h2 { font-size:1.1rem; margin:32px 0 8px; }
+  .sub { color:var(--ink-2); font-size:.9rem; margin:0 0 20px; }
+  .card { background:var(--surface-1); border:1px solid var(--border);
+          border-radius:10px; padding:20px; margin-bottom:20px; }
+  .hero-label { font-size:.85rem; color:var(--ink-2); margin:0; }
+  .hero { font-size:52px; font-weight:700; line-height:1.15; margin:2px 0 0; }
+  .hero small { font-size:22px; font-weight:600; }
+  .hero-note { font-size:.85rem; color:var(--ink-2); margin:6px 0 0; }
+  .chart-title { font-size:1rem; font-weight:600; margin:0 0 2px; }
+  .chart-sub { font-size:.82rem; color:var(--ink-2); margin:0 0 14px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:.8rem;
+            color:var(--ink-2); margin:10px 0 0; }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px;
+    border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--sw); }
+  svg { display:block; width:100%; height:auto; }
+  svg text { font-family:inherit; }
+  .axis-t { fill:var(--ink-muted); font-size:11px; }
+  .lab-t { fill:var(--ink-2); font-size:12px; }
+  .val-t { fill:var(--ink-1); font-size:12px; font-weight:600; }
+  .seg-t { fill:#fff; font-size:11.5px; font-weight:600; }
+  .bar-seg:hover, .col:hover { opacity:.85; }
+  .tip { position:fixed; pointer-events:none; z-index:10; display:none;
+    background:var(--surface-1); color:var(--ink-1); border:1px solid var(--border);
+    border-radius:6px; padding:6px 10px; font-size:.8rem;
+    box-shadow:0 2px 8px rgba(0,0,0,.18); }
+  details { margin-top:12px; font-size:.85rem; }
+  details summary { cursor:pointer; color:var(--ink-2); }
+  .tblwrap { overflow-x:auto; }
+  table { border-collapse:collapse; margin-top:8px;
+          font-variant-numeric:tabular-nums; width:100%; }
+  th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
+          text-align:right; font-size:.82rem; white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th { color:var(--ink-2); font-weight:600; }
+  .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
+  .src a, .nav a { color:inherit; }
+  .nav { font-size:.85rem; color:var(--ink-2); margin-bottom:20px; }
+  input[type=search] { width:100%; box-sizing:border-box; padding:8px 12px;
+    border:1px solid var(--border); border-radius:8px; font-size:.9rem;
+    background:var(--surface-1); color:var(--ink-1); margin-bottom:8px; }
+</style></head>
+<body>
+
+<p class="nav"><a href="index.html">← お金の地図（トップ）</a></p>
+<h1>校区別に見る 豊橋市の公共施設</h1>
+<p class="sub">出典: 豊橋市公共施設白書2025 個別票（建築年度公表の390施設を、個別票記載の小学校区で集計）。
+延べ床面積の大きい順。市営住宅・市役所など全市共通の施設も所在校区に計上している。</p>
+<div class="card tblwrap">
+<table>
+<tr><th>小学校区</th><th>施設数</th><th>延べ床面積</th>
+<th>築40年以上</th><th>同 延べ床面積</th><th>同 面積比</th></tr>
+<tr><td>吉田方</td><td>16</td><td>121,990㎡</td><td>6</td><td>10,918㎡</td><td>8.9%</td></tr><tr><td>八町</td><td>16</td><td>93,300㎡</td><td>12</td><td>89,973㎡</td><td>96.4%</td></tr><tr><td>二川南</td><td>11</td><td>80,890㎡</td><td>4</td><td>45,175㎡</td><td>55.8%</td></tr><tr><td>多米</td><td>11</td><td>74,342㎡</td><td>7</td><td>55,129㎡</td><td>74.2%</td></tr><tr><td>栄</td><td>10</td><td>54,620㎡</td><td>6</td><td>47,025㎡</td><td>86.1%</td></tr><tr><td>汐田</td><td>6</td><td>49,503㎡</td><td>3</td><td>40,617㎡</td><td>82.0%</td></tr><tr><td>磯辺</td><td>8</td><td>46,233㎡</td><td>5</td><td>33,599㎡</td><td>72.7%</td></tr><tr><td>飯村</td><td>11</td><td>42,820㎡</td><td>7</td><td>30,210㎡</td><td>70.6%</td></tr><tr><td>つつじが丘</td><td>6</td><td>40,469㎡</td><td>1</td><td>31,526㎡</td><td>77.9%</td></tr><tr><td>岩西</td><td>7</td><td>36,408㎡</td><td>4</td><td>22,525㎡</td><td>61.9%</td></tr><tr><td>植田</td><td>7</td><td>33,630㎡</td><td>3</td><td>14,838㎡</td><td>44.1%</td></tr><tr><td>東田</td><td>7</td><td>33,490㎡</td><td>6</td><td>33,416㎡</td><td>99.8%</td></tr><tr><td>牟呂</td><td>12</td><td>31,012㎡</td><td>4</td><td>16,234㎡</td><td>52.3%</td></tr><tr><td>松山</td><td>13</td><td>28,337㎡</td><td>3</td><td>2,874㎡</td><td>10.1%</td></tr><tr><td>鷹丘</td><td>9</td><td>27,377㎡</td><td>3</td><td>7,931㎡</td><td>29.0%</td></tr><tr><td>幸</td><td>9</td><td>27,312㎡</td><td>6</td><td>20,944㎡</td><td>76.7%</td></tr><tr><td>岩田</td><td>10</td><td>24,411㎡</td><td>7</td><td>24,060㎡</td><td>98.6%</td></tr><tr><td>中野</td><td>5</td><td>23,312㎡</td><td>5</td><td>23,312㎡</td><td>100.0%</td></tr><tr><td>松葉</td><td>8</td><td>22,254㎡</td><td>5</td><td>12,195㎡</td><td>54.8%</td></tr><tr><td>福岡</td><td>9</td><td>22,056㎡</td><td>5</td><td>12,509㎡</td><td>56.7%</td></tr><tr><td>玉川</td><td>13</td><td>20,077㎡</td><td>5</td><td>13,128㎡</td><td>65.4%</td></tr><tr><td>高根</td><td>11</td><td>19,545㎡</td><td>2</td><td>7,171㎡</td><td>36.7%</td></tr><tr><td>老津</td><td>7</td><td>19,212㎡</td><td>5</td><td>13,069㎡</td><td>68.0%</td></tr><tr><td>二川</td><td>11</td><td>19,051㎡</td><td>6</td><td>14,902㎡</td><td>78.2%</td></tr><tr><td>前芝</td><td>8</td><td>19,022㎡</td><td>2</td><td>8,618㎡</td><td>45.3%</td></tr><tr><td>高師</td><td>8</td><td>18,896㎡</td><td>4</td><td>16,265㎡</td><td>86.1%</td></tr><tr><td>大清水</td><td>10</td><td>18,549㎡</td><td>3</td><td>5,564㎡</td><td>30.0%</td></tr><tr><td>牛川</td><td>6</td><td>18,178㎡</td><td>5</td><td>18,127㎡</td><td>99.7%</td></tr><tr><td>向山</td><td>8</td><td>17,718㎡</td><td>5</td><td>16,503㎡</td><td>93.1%</td></tr><tr><td>野依</td><td>7</td><td>16,986㎡</td><td>1</td><td>51㎡</td><td>0.3%</td></tr><tr><td>豊南</td><td>10</td><td>15,861㎡</td><td>6</td><td>15,266㎡</td><td>96.2%</td></tr><tr><td>新川</td><td>3</td><td>15,278㎡</td><td>1</td><td>8,798㎡</td><td>57.6%</td></tr><tr><td>旭</td><td>5</td><td>15,123㎡</td><td>4</td><td>9,055㎡</td><td>59.9%</td></tr><tr><td>花田</td><td>5</td><td>14,573㎡</td><td>3</td><td>14,436㎡</td><td>99.1%</td></tr><tr><td>羽根井</td><td>6</td><td>13,267㎡</td><td>4</td><td>13,114㎡</td><td>98.8%</td></tr><tr><td>下地</td><td>6</td><td>12,446㎡</td><td>4</td><td>12,356㎡</td><td>99.3%</td></tr><tr><td>細谷</td><td>6</td><td>8,999㎡</td><td>4</td><td>8,766㎡</td><td>97.4%</td></tr><tr><td>西郷</td><td>10</td><td>8,078㎡</td><td>5</td><td>7,608㎡</td><td>94.2%</td></tr><tr><td>豊</td><td>4</td><td>7,610㎡</td><td>3</td><td>7,538㎡</td><td>99.1%</td></tr><tr><td>芦原</td><td>7</td><td>7,284㎡</td><td>5</td><td>6,950㎡</td><td>95.4%</td></tr><tr><td>富士見</td><td>2</td><td>6,744㎡</td><td>2</td><td>6,744㎡</td><td>100.0%</td></tr><tr><td>津田</td><td>6</td><td>6,311㎡</td><td>3</td><td>4,455㎡</td><td>70.6%</td></tr><tr><td>石巻</td><td>6</td><td>5,768㎡</td><td>4</td><td>5,364㎡</td><td>93.0%</td></tr><tr><td>大崎</td><td>4</td><td>5,301㎡</td><td>2</td><td>4,142㎡</td><td>78.1%</td></tr><tr><td>大村</td><td>5</td><td>5,214㎡</td><td>3</td><td>4,978㎡</td><td>95.5%</td></tr><tr><td>杉山</td><td>6</td><td>4,954㎡</td><td>3</td><td>4,476㎡</td><td>90.4%</td></tr><tr><td>天伯</td><td>3</td><td>4,131㎡</td><td>2</td><td>4,060㎡</td><td>98.3%</td></tr><tr><td>下条</td><td>4</td><td>3,602㎡</td><td>2</td><td>3,495㎡</td><td>97.0%</td></tr><tr><td>嵩山</td><td>3</td><td>3,524㎡</td><td>2</td><td>3,452㎡</td><td>98.0%</td></tr><tr><td>小沢</td><td>3</td><td>3,480㎡</td><td>2</td><td>3,409㎡</td><td>98.0%</td></tr><tr><td>賀茂</td><td>3</td><td>3,233㎡</td><td>2</td><td>3,162㎡</td><td>97.8%</td></tr><tr><td>谷川</td><td>3</td><td>3,219㎡</td><td>2</td><td>3,148㎡</td><td>97.8%</td></tr>
+</table>
+</div>
+<p class="src">「築40年以上」は2026年時点・最古棟の建築年度による。
+複合施設は母体施設側に面積計上されるため、校区の実感と差が出る場合がある。</p>
+
+<div class="tip" id="tip"></div>
+
+<script>
+  const tip = document.getElementById("tip");
+  if (tip) document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      tip.textContent = el.dataset.tip; tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 240) + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.style.display = "none");
+  });
+</script>
+
+</body></html>
