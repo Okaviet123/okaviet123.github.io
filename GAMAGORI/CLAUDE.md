@@ -49,7 +49,8 @@
 |---|---|---|
 | 総合管理計画 | 蒲郡市公共施設等総合管理計画（平成29年3月、令和4年3月一部改訂） | https://www.city.gamagori.lg.jp/uploaded/attachment/84078.pdf |
 | 公共施設白書 | 蒲郡市公共施設白書（令和2年度改訂版、令和3年3月） | https://www.city.gamagori.lg.jp/uploaded/attachment/74398.pdf |
-| 決算カード/財政状況資料集 | 「財政状況資料集」ページに集約。個別年度PDFのURLは未確認（要ページ内リンク列挙） | https://www.city.gamagori.lg.jp/unit/zaimu/zaiseijyokyoshiryosyu.html |
+| 決算カード/財政状況資料集 | 「財政状況資料集」ページに集約。H18〜R6年度分のURLをユーザーがClaude Chrome経由で確認済み（`collect_pdfs.py`のTARGETSに記載）。年度によりPDF/Excel(xlsx)が混在。H17年度以前は掲載なし | https://www.city.gamagori.lg.jp/unit/zaimu/zaiseijyokyoshiryosyu.html |
+| 公共施設マネジメント基本方針・実施計画 | 平成28年3月策定の基本方針、実施計画（本編・概要版）。URLはユーザーがClaude Chrome経由で確認済み（`collect_pdfs.py`参照） | https://www.city.gamagori.lg.jp/site/management/jisshikeikaku.html |
 | 参考: 人口ビジョン | 将来の人口の見通し／まち・ひと・しごと創生総合戦略2025-2030(案) | https://www.city.gamagori.lg.jp/uploaded/attachment/56861.pdf ／ https://www.city.gamagori.lg.jp/uploaded/attachment/106454.pdf |
 | 参考: 個別施設計画（地区別） | 中学校区単位のワークショップで地区別個別計画を策定（蒲郡北地区は策定済み） | https://www.city.gamagori.lg.jp/unit/kyoikuseisaku/basicplan-formulate.html |
 
@@ -65,17 +66,25 @@
 （curl・WebFetch）が **403（egressポリシー拒否）** でブロックされている
 （`WebSearch` はブロックされておらず、フェーズ1の偵察はこれで実施した）。
 
-- ブロックされているため、PDFの実ダウンロード（フェーズ2）・HTMLページ内の
-  リンク列挙（決算カードの年度別ファイル名特定等）が実行できていない。
+- ブロックされているため、PDFの実ダウンロード（フェーズ2）自体はこの
+  セッションからまだ実行できていない。
 - ガードレール（`SKILLS/muni-facility-report/references/guardrails.md`）の
   「403/407が出たら報告する、回避しない」原則に従い、プロキシ回避等は行っていない。
-- **ユーザーへの依頼**: 豊橋#1のとき（環境「Default」のネットワークポリシーを
-  カスタム許可リストに変更）と同様に、以下のドメインをこの環境の許可リストに
-  追加してほしい。
-  - `www.city.gamagori.lg.jp` / `city.gamagori.lg.jp`（総合管理計画・白書・決算カード本体）
-  - `www.soumu.go.jp` / `soumu.go.jp`（決算カードの総務省全国一覧。市サイト側で
-    十分な場合は不要になる可能性あり）
-  - `www.e-stat.go.jp` / `e-stat.go.jp` / `api.e-stat.go.jp`（人口動態の補助データ、必要になった場合のみ）
+- **フォールバックで解決した部分**: HTMLページ内のリンク列挙（決算カード・
+  マネジメント計画等の年度別ファイル名特定）は、ユーザーが自身のClaude
+  Chrome（ブラウザ拡張）で該当ページを開いて確認し、URL一覧を提供してくれた
+  （2026-07-27）。結果は`collect_pdfs.py`のTARGETSに反映済み。
+- **未解決**: 実ファイルのバイト取得（ダウンロード）はまだできていない。
+  次のいずれかが必要:
+  1. 豊橋#1のとき（環境「Default」のネットワークポリシーをカスタム許可
+     リストに変更）と同様に、この環境の許可リストに
+     `www.city.gamagori.lg.jp` / `city.gamagori.lg.jp` を追加してもらい、
+     `collect_pdfs.py` を正規の手順として実行する（出典台帳に
+     fetched_at_utc・SHA256が正しく記録される、最も望ましい経路）。
+  2. ユーザーが自分でPDF/Excelをダウンロードし、`RAW/`配下の対応する
+     パス（`collect_pdfs.py`のTARGETS参照）に配置してcommit・pushする。
+     この場合、`LOG/download_ledger.csv`への記録（取得日時・SHA256）は
+     手動またはこちらで事後的に補完する。
 - 許可リスト更新後にフェーズ2（`collect_pdfs.py`実行）以降を再開する。
 
 ## 事実確認プロセス（豊橋#1と同一の水準を適用）
