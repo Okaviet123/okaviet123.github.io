@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="蒲郡市の公式資料から: 公共施設の維持・更新は30年で約523億円不足。市は延べ床面積30%程度削減を目標に。">
+<title>蒲郡市の公共施設 これから30年のお金の地図</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    --surface-1:#fcfcfb; --page:#f9f9f7; --ink-1:#0b0b0b; --ink-2:#52514e;
+    --ink-muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --ctx:#c3c2b7;
+    --border:rgba(11,11,11,0.10);
+    font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--page); color:var(--ink-1);
+    margin:0 auto; max-width:860px; padding:24px 16px 48px; line-height:1.75;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) body {
+      color-scheme:dark;
+      --surface-1:#1a1a19; --page:#0d0d0d; --ink-1:#fff; --ink-2:#c3c2b7;
+      --grid:#2c2c2a; --baseline:#383835;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ctx:#52514e;
+      --border:rgba(255,255,255,0.10);
+    }
+  }
+  h1 { font-size:1.45rem; margin:0 0 4px; line-height:1.4; }
+  h2 { font-size:1.1rem; margin:32px 0 8px; }
+  .sub { color:var(--ink-2); font-size:.9rem; margin:0 0 20px; }
+  .card { background:var(--surface-1); border:1px solid var(--border);
+          border-radius:10px; padding:20px; margin-bottom:20px; }
+  .hero-label { font-size:.85rem; color:var(--ink-2); margin:0; }
+  .hero { font-size:52px; font-weight:700; line-height:1.15; margin:2px 0 0; }
+  .hero small { font-size:22px; font-weight:600; }
+  .hero-note { font-size:.85rem; color:var(--ink-2); margin:6px 0 0; }
+  .chart-title { font-size:1rem; font-weight:600; margin:0 0 2px; }
+  .chart-sub { font-size:.82rem; color:var(--ink-2); margin:0 0 14px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:.8rem;
+            color:var(--ink-2); margin:10px 0 0; }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px;
+    border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--sw); }
+  svg { display:block; width:100%; height:auto; }
+  svg text { font-family:inherit; }
+  .axis-t { fill:var(--ink-muted); font-size:11px; }
+  .lab-t { fill:var(--ink-2); font-size:12px; }
+  .val-t { fill:var(--ink-1); font-size:12px; font-weight:600; }
+  .seg-t { fill:#fff; font-size:11.5px; font-weight:600; }
+  .bar-seg:hover, .col:hover { opacity:.85; }
+  .tip { position:fixed; pointer-events:none; z-index:10; display:none;
+    background:var(--surface-1); color:var(--ink-1); border:1px solid var(--border);
+    border-radius:6px; padding:6px 10px; font-size:.8rem;
+    box-shadow:0 2px 8px rgba(0,0,0,.18); }
+  details { margin-top:12px; font-size:.85rem; }
+  details summary { cursor:pointer; color:var(--ink-2); }
+  .tblwrap { overflow-x:auto; }
+  table { border-collapse:collapse; margin-top:8px;
+          font-variant-numeric:tabular-nums; width:100%; }
+  th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
+          text-align:right; font-size:.82rem; white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th { color:var(--ink-2); font-weight:600; }
+  .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
+  .src a, .nav a { color:inherit; }
+  .nav { font-size:.85rem; color:var(--ink-2); margin-bottom:20px; }
+  input[type=search] { width:100%; box-sizing:border-box; padding:8px 12px;
+    border:1px solid var(--border); border-radius:8px; font-size:.9rem;
+    background:var(--surface-1); color:var(--ink-1); margin-bottom:8px; }
+</style></head>
+<body>
+
+<h1>蒲郡市の公共施設 — これから30年のお金の地図</h1>
+<p class="sub">蒲郡市 公開情報の地図 #1（未定公開）</p>
+
+<p>【実名をここに】。蒲郡市で学んだ人間が、蒲郡市の
+公開情報を読む——このレポートは、市が自ら公表している計画書・白書・決算資料を、
+市民が読める形に翻訳したものです。意見や提言ではなく、書いてあることの整理です。
+自分の話はここまでにして、以下はすべて市の数字です。</p>
+
+<div class="card">
+  <p class="hero-label">今後30年間で、施設の維持・更新に必要なお金のうち</p>
+  <p class="hero">約523<small>億円が不足</small></p>
+  <p class="hero-note">必要額 約1,081億円に対し、用意できる見込みは約
+  558億円（約48%不足）。市の目標は「建物の更新の際に
+  概ね3割（約30%）の床面積を縮減する」こと。
+  ——蒲郡市公共施設マネジメント実施計画（本編）(平成29年3月) p.14-15</p>
+</div>
+
+<div class="card">
+  <p class="chart-title">必要なお金と、用意できるお金（30年間換算・建物系施設）</p>
+  <p class="chart-sub">市が白書のライフサイクルコスト試算（平成27年からの50年間）をもとに
+  計画期間の30年に換算した数値。上段: 必要な費用 ／
+  下段: 現在の支出ペース（実績 約18.6億円/年）を30年続けた場合</p>
+  <svg viewBox="0 0 800 190" role="img"
+  aria-label="必要1,081億円に対し用意できるのは558億円で523億円不足">
+  <g class="axis-t"><text x="140" y="182" text-anchor="middle">0</text><text x="278" y="182" text-anchor="middle">300</text><text x="417" y="182" text-anchor="middle">600</text><text x="555" y="182" text-anchor="middle">900</text><text x="694" y="182" text-anchor="middle">1,200億円</text></g>
+  <g stroke="var(--grid)" stroke-width="1"><line x1="278" y1="30" x2="278" y2="168"/><line x1="417" y1="30" x2="417" y2="168"/><line x1="555" y1="30" x2="555" y2="168"/><line x1="694" y1="30" x2="694" y2="168"/></g>
+  <line x1="140" y1="30" x2="140" y2="168" stroke="var(--baseline)" stroke-width="1"/>
+  <text class="lab-t" x="132" y="66" text-anchor="end">必要な費用</text>
+  <rect class="bar-seg" data-tip="維持更新費用（ライフサイクルコスト試算、30年換算）: 約1,081億円" x="140.0" y="48" width="498.9" height="28" fill="var(--s1)" rx="4"/><text class="seg-t" x="389" y="66" text-anchor="middle">1,081</text>
+  <text class="val-t" x="647" y="66">1,081</text>
+  <text class="lab-t" x="132" y="128" text-anchor="end">用意できる</text>
+  <rect class="bar-seg" data-tip="約18.6億円/年 × 30年 → 約558億円（計画の試算値）"
+    x="140" y="110" width="257.5" height="28" fill="var(--ctx)" rx="4"/>
+  <text class="val-t" x="406" y="128">558</text>
+  <g stroke="var(--ink-2)" fill="none" stroke-width="1.2">
+    <line x1="397.5" y1="88" x2="397.5" y2="98"/>
+    <line x1="638.9" y1="88" x2="638.9" y2="98"/>
+    <line x1="397.5" y1="93" x2="638.9" y2="93"/>
+  </g>
+  <text class="lab-t" x="518" y="106" text-anchor="middle"
+    style="font-weight:600">不足 約523億円</text>
+  <line x1="397.5" y1="30" x2="397.5" y2="168"
+    stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 3"/>
+</svg>
+  <div class="legend"><span style="--sw: var(--s1)">維持更新費用（ライフサイクルコスト試算、30年換算）</span><span style="--sw: var(--ctx)">用意できる費用</span></div>
+  <details><summary>データ表を開く</summary>
+    <div class="tblwrap"><table>
+      <tr><th>項目</th><th>金額（億円）</th></tr>
+      <tr><td>維持更新費用（ライフサイクルコスト試算、30年換算）</td><td>約1,081</td></tr>
+      <tr><td><b>必要な費用 計</b></td><td><b>約1,081</b></td></tr>
+      <tr><td>用意できる費用（18.6億円/年×30年、計画の試算値）</td><td>約558</td></tr>
+      <tr><td><b>不足</b></td><td><b>約523（約48%）</b></td></tr>
+    </table></div>
+  </details>
+</div>
+
+<div class="card">
+  <p class="chart-title">その建物たちは、いつ建てられたか（建築年代別の延べ床面積）</p>
+  <p class="chart-sub">建築年度が公表されている施設を集計</p>
+  <svg viewBox="0 0 800 240" role="img"
+  aria-label="建築年代別延床面積。1960年代が最大">
+  <g stroke="var(--grid)" stroke-width="1">
+    <line x1="60" y1="26" x2="780" y2="26"/><line x1="60" y1="87" x2="780" y2="87"/>
+    <line x1="60" y1="148" x2="780" y2="148"/>
+  </g>
+  <g class="axis-t">
+    <text x="54" y="30" text-anchor="end">10万㎡</text>
+    <text x="54" y="91" text-anchor="end">6万㎡</text>
+    <text x="54" y="152" text-anchor="end">3万㎡</text>
+  </g>
+  <line x1="60" y1="209" x2="780" y2="209" stroke="var(--baseline)" stroke-width="1"/>
+  <g fill="var(--s1)"><rect class="col" data-tip="1940年代: 1施設 / 0.7万㎡" x="74" y="195.8" width="44" height="13.2" rx="4"/><rect class="col" data-tip="1950年代: 7施設 / 4.1万㎡" x="162" y="132.2" width="44" height="76.8" rx="4"/><rect class="col" data-tip="1960年代: 19施設 / 9.1万㎡" x="249" y="36.4" width="44" height="172.6" rx="4"/><rect class="col" data-tip="1970年代: 28施設 / 5.9万㎡" x="336" y="98.1" width="44" height="110.9" rx="4"/><rect class="col" data-tip="1980年代: 13施設 / 1.5万㎡" x="424" y="181.3" width="44" height="27.7" rx="4"/><rect class="col" data-tip="1990年代: 14施設 / 2.9万㎡" x="512" y="154.7" width="44" height="54.3" rx="4"/><rect class="col" data-tip="2000年代: 8施設 / 1.4万㎡" x="599" y="182.4" width="44" height="26.6" rx="4"/><rect class="col" data-tip="2010年代: 6施設 / 0.5万㎡" x="686" y="199.5" width="44" height="9.5" rx="4"/></g>
+  <text class="val-t" x="271" y="29" text-anchor="middle">
+    9.1万㎡</text>
+  <g class="axis-t"><text x="96" y="226" text-anchor="middle">40s</text><text x="184" y="226" text-anchor="middle">50s</text><text x="271" y="226" text-anchor="middle">60s</text><text x="358" y="226" text-anchor="middle">70s</text><text x="446" y="226" text-anchor="middle">80s</text><text x="534" y="226" text-anchor="middle">90s</text><text x="621" y="226" text-anchor="middle">2000s</text><text x="708" y="226" text-anchor="middle">10s</text></g>
+</svg>
+  <details><summary>データ表を開く</summary>
+    <div class="tblwrap"><table>
+      <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
+      <tr><td>1940年代</td><td>1</td><td>6,952㎡</td></tr><tr><td>1950年代</td><td>7</td><td>40,612㎡</td></tr><tr><td>1960年代</td><td>19</td><td>91,236㎡</td></tr><tr><td>1970年代</td><td>28</td><td>58,613㎡</td></tr><tr><td>1980年代</td><td>13</td><td>14,631㎡</td></tr><tr><td>1990年代</td><td>14</td><td>28,709㎡</td></tr><tr><td>2000年代</td><td>8</td><td>14,063㎡</td></tr><tr><td>2010年代</td><td>6</td><td>4,997㎡</td></tr>
+    </table></div>
+  </details>
+</div>
+
+<h2>裏付け表</h2>
+<ul>
+  <li><a href="kouku.html">地区別に見る</a></li>
+  <li><a href="shisetsu.html">全施設の一覧</a> — 実名・築年数・支出・利用者数（絞り込み可）</li>
+</ul>
+
+<h2>出典と方法</h2>
+<p class="src">
+  30年収支試算・費用内訳・削減目標 —
+  蒲郡市公共施設マネジメント実施計画（本編）(平成29年3月) p.14-15。白書のライフサイクルコスト試算（平成27年からの50年間が対象。床面積100㎡以上の施設が対象で、モーターボート競走場・下水道処理場や水道の配水施設等は対象外）をもとに、計画期間である30年間に、市が523億円を算出したのと同じ比率（÷50年×30年）で当方が換算。
+  現在の年間実績支出（約18.6億円）は同計画 p.14。
+  削減目標 p.15。<br>
+  すべての取得ファイルのURL・取得日時・ハッシュ値、および集計スクリプトは
+  <a href="https://github.com/okaviet123/okaviet123.github.io/tree/main/GAMAGORI">公開リポジトリ</a>に掲載。
+  数字の誤りを見つけた方はリポジトリのIssueでお知らせください。確認のうえ訂正します。
+</p>
+
+<div class="tip" id="tip"></div>
+
+<script>
+  const tip = document.getElementById("tip");
+  if (tip) document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      tip.textContent = el.dataset.tip; tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 240) + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.style.display = "none");
+  });
+</script>
+
+</body></html>

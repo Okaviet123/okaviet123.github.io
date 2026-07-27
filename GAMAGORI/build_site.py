@@ -3,9 +3,16 @@
 `SKILLS/muni-facility-report/scripts/build_site.py`（汎用テンプレート）を
 蒲郡市向けに書き換えたもの。
 
-HERO_NUMBERS はまだ実データ未取得のためテンプレート値のまま（プレースホルダ）。
-`collect_pdfs.py` でPDFを取得し、総合管理計画の30年収支試算を実際に読んでから
-書き換えること。推測で埋めない（スキルのガードレール参照）。
+HERO_NUMBERSは`RAW/keikaku/jisshi_keikaku_honpen.pdf`（公共施設マネジメント
+実施計画・本編）p.14-15の図表1-14と目標設定の記述から実データを反映した
+（2026-07-27）。同計画には「50年間のライフサイクルコスト試算」（白書の
+試算をもとにした数値）と、計画期間である「30年間」への換算値の両方が
+記載されている。本サイトの表題を30年で統一するため、50年間の試算値
+（必要1,801億円・実績930億円・不足871億円）を、市が523億円（目標②）を
+算出した際と同じ比率（÷50年×30年）で当方が30年換算している
+（市の発表そのものではないので「当方の集計」と明記）。市が直接30年換算
+して発表している数値は不足額523億円のみで、これはそのまま「市の発表」
+として扱う。
 
 配色・マーク仕様は dataviz skill の references/palette.md に準拠。
 新しい市でも validate_palette.js を必ず実行してから使うこと
@@ -23,33 +30,43 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 SITE = ROOT / "SITE"
 
-# ==== ★蒲郡市向けに書き換え: 基本設定（HERO_NUMBERS等は実データ取得後に更新） ====
+# ==== ★蒲郡市向け設定 ====
 CITY_NAME = "蒲郡市"
-AUTHOR_NAME = "【実名をここに】"
-DISTRICT_COL = "中学校区"  # analyze_shisetsu.py の DISTRICT_COL と一致させる。暫定値、白書取得後に確認
-DISTRICT_LABEL = "校区"    # 表の見出しに使う短い呼び名
+AUTHOR_NAME = "【実名をここに】"  # ★公開前に必ず実名に置き換えること（プレースホルダのまま公開しない）
+DISTRICT_COL = "地区"       # analyze_shisetsu.py の DISTRICT_COL と一致（大塚/三谷/蒲郡北/蒲郡南/塩津/形原/西浦）
+DISTRICT_LABEL = "地区"     # 表の見出しに使う短い呼び名
 PUBLISH_DATE = "未定"      # データ取得・検証が終わるまで確定させない
 GITHUB_REPO_URL = "https://github.com/okaviet123/okaviet123.github.io/tree/main/GAMAGORI"
 
-# 30年収支試算（総合管理計画から。単位: 億円）— ★実データ未取得。プレースホルダのまま
-# （蒲郡市公共施設等総合管理計画 平成29年3月・令和4年3月一部改訂 を取得後に書き換える）
+# 30年収支試算（単位: 億円）。2026-07-27、RAW/keikaku/jisshi_keikaku_honpen.pdf
+# （公共施設マネジメント実施計画・本編）p.14-15を実際に読んで確定。
+# 同計画は「白書のライフサイクルコスト試算」による50年間(平成27年〜)の数値
+# （必要1,801億円/実績930億円/不足871億円、年度平均では必要36.0億円・実績18.6億円）
+# を根拠に、計画期間である30年間(平成29〜58年度)の目標（床面積概ね3割縮減・
+# 523億円の費用縮減）を設定している。523億円は市が「871億円÷50年×30年」で
+# 自ら30年換算した数値（＝市の発表）。need_total/available_totalは、市の発表
+# そのものではなく、同じ比率換算を必要額・実績額それぞれに当方が適用した値
+# （＝当方の集計）。したがって shortfall=523(市の発表), need_total-available_total
+# =523(当方の集計、四捨五入後で偶然にも一致)という構成になっている。
 HERO_NUMBERS = {
-    "need_total": 4392,          # 必要な費用の合計
-    "need_breakdown": [           # (ラベル, 億円) の内訳。合計がneed_totalと一致すること
-        ("更新等（建て替え）", 1551),
-        ("改修（大規模修繕）", 2000),
-        ("維持管理・修繕", 841),
+    "need_total": 1081,           # 必要な費用（当方集計: 1,801億円÷50年×30年）
+    "need_breakdown": [            # (ラベル, 億円)。1項目のみ＝内訳の記載が計画にないため
+        ("維持更新費用（ライフサイクルコスト試算、30年換算）", 1081),
     ],
-    "available_total": 3268,      # 用意できる費用
-    "annual_actual": 108.9,       # 現在の年間実績支出（億円/年）
-    "shortfall": 1124,            # 不足額
-    "shortfall_pct": 26,          # 不足率(%)
-    "reduction_target_pct": 20,   # 市が掲げる延床削減目標(%、「程度」等の言葉は本文で補う)
-    "source_plan_name": "蒲郡市公共施設等総合管理計画(平成29年3月、令和4年3月一部改訂)",
-    "source_page_gap": "TBD",     # ギャップ試算のページ（PDF取得後に確認）
-    "source_page_annual": "TBD",  # 現在の年間実績支出のページ
-    "source_page_target": "TBD",  # 削減目標のページ
-    "test_range_note": "試算対象範囲は計画PDF取得後に確認して記載する",  # 対象範囲の注記。市の計画の記載に合わせる
+    "available_total": 558,       # 用意できる費用（当方集計: 930億円÷50年×30年）
+    "annual_actual": 18.6,        # 現在の年間実績支出（億円/年、H20-H25の6年度平均、市の発表）
+    "shortfall": 523,             # 不足額（市の発表。871億円÷50年×30年の換算値）
+    "shortfall_pct": 48,          # 不足率(%、当方の集計: 523/1081)
+    "reduction_target_pct": 30,   # 市が掲げる延床削減目標(%)。「建物の更新の際に概ね3割の床面積を縮減」
+    "source_plan_name": "蒲郡市公共施設マネジメント実施計画（本編）(平成29年3月)",
+    "source_page_gap": "14-15",   # 図表1-14（50年間試算）と目標設定の記述
+    "source_page_annual": "14",   # 実績年度平均18.6億円の記載
+    "source_page_target": "15",   # 床面積3割縮減・523億円縮減目標の記載
+    "test_range_note": "白書のライフサイクルコスト試算（平成27年からの50年間が対象。"
+                        "床面積100㎡以上の施設が対象で、モーターボート競走場・"
+                        "下水道処理場や水道の配水施設等は対象外）をもとに、"
+                        "計画期間である30年間に、市が523億円を算出したのと同じ比率"
+                        "（÷50年×30年）で当方が換算",
 }
 # ======================================
 
@@ -164,8 +181,8 @@ def fmt(n, unit=""):
 def core_figure_svg():
     """お金のギャップの横バー。HERO_NUMBERSから座標を自動計算する。"""
     h = HERO_NUMBERS
-    x0, x1 = 140, 780
-    axis_max = round(h["need_total"] * 1.05, -2) or 100  # 必要額の少し上まで
+    x0, x1 = 140, 740
+    axis_max = round(h["need_total"] * 1.2, -2) or 100  # 必要額の右に合計値ラベルが収まる余白を確保
     px = (x1 - x0) / axis_max
     colors = ["var(--s1)", "var(--s2)", "var(--s3)"]
     parts, x = [], x0
@@ -277,14 +294,15 @@ def build_index():
   <p class="hero-label">今後30年間で、施設の維持・更新に必要なお金のうち</p>
   <p class="hero">約{h['shortfall']:,}<small>億円が不足</small></p>
   <p class="hero-note">必要額 約{h['need_total']:,}億円に対し、用意できる見込みは約
-  {h['available_total']:,}億円（約{h['shortfall_pct']}%不足）。市の結論は「施設の延べ床面積を
-  30年間で{h['reduction_target_pct']}%程度削減する」。
+  {h['available_total']:,}億円（約{h['shortfall_pct']}%不足）。市の目標は「建物の更新の際に
+  概ね{h['reduction_target_pct']//10}割（約{h['reduction_target_pct']}%）の床面積を縮減する」こと。
   ——{h['source_plan_name']} p.{h['source_page_gap']}</p>
 </div>
 
 <div class="card">
-  <p class="chart-title">必要なお金と、用意できるお金（30年間の累計・建物系施設）</p>
-  <p class="chart-sub">上段: 維持・更新に必要な費用の内訳 ／
+  <p class="chart-title">必要なお金と、用意できるお金（30年間換算・建物系施設）</p>
+  <p class="chart-sub">市が白書のライフサイクルコスト試算（平成27年からの50年間）をもとに
+  計画期間の30年に換算した数値。上段: 必要な費用 ／
   下段: 現在の支出ペース（実績 約{h['annual_actual']}億円/年）を30年続けた場合</p>
   {gap_svg}
   <div class="legend">{legend}</div>
@@ -354,7 +372,7 @@ def build_kouku():
 <div class="card tblwrap">
 <table>
 <tr><th>{DISTRICT_LABEL}</th><th>施設数</th><th>延べ床面積</th>
-<th>{old_n_col.split("_")[0]}以上</th><th>同 延べ床面積</th><th>同 面積比</th></tr>
+<th>{old_n_col.split("_")[0]}の施設数</th><th>同 延べ床面積</th><th>同 面積比</th></tr>
 {tr}
 </table>
 </div>
@@ -386,11 +404,13 @@ def build_shisetsu():
 <div class="card tblwrap">
 <table id="t">
 <tr><th>施設名</th><th>分類</th><th>{DISTRICT_LABEL}</th><th>建築年度</th>
-<th>延べ床面積(㎡)</th><th>支出(円)</th><th>利用者数(人)</th><th>市民1人あたり(円)</th></tr>
+<th>延べ床面積(㎡)</th><th>支出6年平均(円)</th><th>利用者数6年平均(人)</th><th>市民1人あたり(円)</th></tr>
 {tr}
 </table>
 </div>
-<p class="src">詳細と出典ページは<a href="{GITHUB_REPO_URL}">リポジトリのCSV</a>を参照。</p>
+<p class="src">支出・利用者数は白書掲載の6ヵ年度（平成26〜令和元年度）平均値（単年度の実額ではない）。
+定義は施設用途により異なる（来館者数・児童数・給食提供食数など）。
+詳細と出典ページは<a href="{GITHUB_REPO_URL}">リポジトリのCSV</a>を参照。</p>
 <script>
   const q = document.getElementById("q"), rows = document.querySelectorAll("#t tr");
   q.addEventListener("input", () => {{

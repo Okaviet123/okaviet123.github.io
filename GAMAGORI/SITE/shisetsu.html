@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<title>蒲郡市の公共施設 全施設一覧</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    --surface-1:#fcfcfb; --page:#f9f9f7; --ink-1:#0b0b0b; --ink-2:#52514e;
+    --ink-muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --ctx:#c3c2b7;
+    --border:rgba(11,11,11,0.10);
+    font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--page); color:var(--ink-1);
+    margin:0 auto; max-width:860px; padding:24px 16px 48px; line-height:1.75;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) body {
+      color-scheme:dark;
+      --surface-1:#1a1a19; --page:#0d0d0d; --ink-1:#fff; --ink-2:#c3c2b7;
+      --grid:#2c2c2a; --baseline:#383835;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ctx:#52514e;
+      --border:rgba(255,255,255,0.10);
+    }
+  }
+  h1 { font-size:1.45rem; margin:0 0 4px; line-height:1.4; }
+  h2 { font-size:1.1rem; margin:32px 0 8px; }
+  .sub { color:var(--ink-2); font-size:.9rem; margin:0 0 20px; }
+  .card { background:var(--surface-1); border:1px solid var(--border);
+          border-radius:10px; padding:20px; margin-bottom:20px; }
+  .hero-label { font-size:.85rem; color:var(--ink-2); margin:0; }
+  .hero { font-size:52px; font-weight:700; line-height:1.15; margin:2px 0 0; }
+  .hero small { font-size:22px; font-weight:600; }
+  .hero-note { font-size:.85rem; color:var(--ink-2); margin:6px 0 0; }
+  .chart-title { font-size:1rem; font-weight:600; margin:0 0 2px; }
+  .chart-sub { font-size:.82rem; color:var(--ink-2); margin:0 0 14px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:.8rem;
+            color:var(--ink-2); margin:10px 0 0; }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px;
+    border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--sw); }
+  svg { display:block; width:100%; height:auto; }
+  svg text { font-family:inherit; }
+  .axis-t { fill:var(--ink-muted); font-size:11px; }
+  .lab-t { fill:var(--ink-2); font-size:12px; }
+  .val-t { fill:var(--ink-1); font-size:12px; font-weight:600; }
+  .seg-t { fill:#fff; font-size:11.5px; font-weight:600; }
+  .bar-seg:hover, .col:hover { opacity:.85; }
+  .tip { position:fixed; pointer-events:none; z-index:10; display:none;
+    background:var(--surface-1); color:var(--ink-1); border:1px solid var(--border);
+    border-radius:6px; padding:6px 10px; font-size:.8rem;
+    box-shadow:0 2px 8px rgba(0,0,0,.18); }
+  details { margin-top:12px; font-size:.85rem; }
+  details summary { cursor:pointer; color:var(--ink-2); }
+  .tblwrap { overflow-x:auto; }
+  table { border-collapse:collapse; margin-top:8px;
+          font-variant-numeric:tabular-nums; width:100%; }
+  th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
+          text-align:right; font-size:.82rem; white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th { color:var(--ink-2); font-weight:600; }
+  .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
+  .src a, .nav a { color:inherit; }
+  .nav { font-size:.85rem; color:var(--ink-2); margin-bottom:20px; }
+  input[type=search] { width:100%; box-sizing:border-box; padding:8px 12px;
+    border:1px solid var(--border); border-radius:8px; font-size:.9rem;
+    background:var(--surface-1); color:var(--ink-1); margin-bottom:8px; }
+</style></head>
+<body>
+
+<p class="nav"><a href="index.html">← お金の地図（トップ）</a></p>
+<h1>蒲郡市の公共施設 全96施設</h1>
+<input type="search" id="q" placeholder="施設名・分類・地区で絞り込み">
+<div class="card tblwrap">
+<table id="t">
+<tr><th>施設名</th><th>分類</th><th>地区</th><th>建築年度</th>
+<th>延べ床面積(㎡)</th><th>支出6年平均(円)</th><th>利用者数6年平均(人)</th><th>市民1人あたり(円)</th></tr>
+<tr><td>大塚駅第１自転車駐車場</td><td>その他施設</td><td>大塚</td><td>1982</td><td>145</td><td>－</td><td>－</td><td>－</td></tr><tr><td>三谷駅北自転車駐車場</td><td>その他施設</td><td>三谷</td><td>1996</td><td>594</td><td>292,000</td><td>－</td><td>－</td></tr><tr><td>交通安全教育センター</td><td>その他施設</td><td>蒲郡北</td><td>1973</td><td>276</td><td>0</td><td>－</td><td>－</td></tr><tr><td>蒲郡乗船センター</td><td>その他施設</td><td>蒲郡南</td><td>1991</td><td>185</td><td>77,000</td><td>－</td><td>－</td></tr><tr><td>市営共同艇庫</td><td>その他施設</td><td>大塚</td><td>2015</td><td>1,488</td><td>419,000</td><td>－</td><td>－</td></tr><tr><td>勤労福祉会館</td><td>保健・福祉施設</td><td>蒲郡南</td><td>1980</td><td>3,174</td><td>32,425,000</td><td>－</td><td>－</td></tr><tr><td>浜町福祉センター</td><td>保健・福祉施設</td><td>塩津</td><td>1982</td><td>709</td><td>34,351,000</td><td>7,970</td><td>－</td></tr><tr><td>中央子育て支援センター</td><td>保健・福祉施設</td><td>蒲郡南</td><td>1992</td><td>99</td><td>8,097,000</td><td>7,200</td><td>－</td></tr><tr><td>生きがいセンター</td><td>保健・福祉施設</td><td>蒲郡南</td><td>1992</td><td>2,176</td><td>17,808,000</td><td>45,057</td><td>－</td></tr><tr><td>養護老人ホーム</td><td>保健・福祉施設</td><td>大塚</td><td>1970</td><td>1,070</td><td>76,288,000</td><td>6,149</td><td>－</td></tr><tr><td>老人福祉センター寿楽荘</td><td>保健・福祉施設</td><td>大塚</td><td>1974</td><td>1,610</td><td>53,794,000</td><td>39,339</td><td>－</td></tr><tr><td>保健医療センター</td><td>保健・福祉施設</td><td>塩津</td><td>1993</td><td>5,855</td><td>958,907,000</td><td>29,167</td><td>－</td></tr><tr><td>ユトリーナ蒲郡</td><td>保健・福祉施設</td><td>西浦</td><td>2000</td><td>1,977</td><td>37,630,000</td><td>38,153</td><td>－</td></tr><tr><td>東部保育園</td><td>児童福祉施設</td><td>蒲郡南</td><td>1969</td><td>812</td><td>49,916,000</td><td>56</td><td>－</td></tr><tr><td>北部保育園</td><td>児童福祉施設</td><td>蒲郡北</td><td>1979</td><td>1,140</td><td>118,058,000</td><td>117</td><td>－</td></tr><tr><td>西部保育園</td><td>児童福祉施設</td><td>蒲郡北</td><td>1977</td><td>660</td><td>67,660,000</td><td>46</td><td>－</td></tr><tr><td>塩津保育園</td><td>児童福祉施設</td><td>塩津</td><td>1969</td><td>933</td><td>47,301,000</td><td>34</td><td>－</td></tr><tr><td>大塚保育園</td><td>児童福祉施設</td><td>大塚</td><td>1970</td><td>684</td><td>61,036,000</td><td>65</td><td>－</td></tr><tr><td>府相保育園</td><td>児童福祉施設</td><td>蒲郡南</td><td>1970</td><td>1,112</td><td>108,936,000</td><td>109</td><td>－</td></tr><tr><td>三谷東保育園</td><td>児童福祉施設</td><td>三谷</td><td>1973</td><td>1,229</td><td>127,319,000</td><td>117</td><td>－</td></tr><tr><td>大塚西保育園</td><td>児童福祉施設</td><td>大塚</td><td>1972</td><td>530</td><td>39,043,000</td><td>27</td><td>－</td></tr><tr><td>三谷西保育園</td><td>児童福祉施設</td><td>三谷</td><td>1971</td><td>1,002</td><td>89,152,000</td><td>70</td><td>－</td></tr><tr><td>形原保育園</td><td>児童福祉施設</td><td>形原</td><td>1970</td><td>904</td><td>92,681,000</td><td>80</td><td>－</td></tr><tr><td>中部保育園</td><td>児童福祉施設</td><td>蒲郡北</td><td>1976</td><td>1,308</td><td>144,594,000</td><td>138</td><td>－</td></tr><tr><td>南部保育園</td><td>児童福祉施設</td><td>蒲郡南</td><td>2011</td><td>1,088</td><td>152,586,000</td><td>144</td><td>－</td></tr><tr><td>形原南保育園</td><td>児童福祉施設</td><td>形原</td><td>1980</td><td>1,201</td><td>106,633,000</td><td>83</td><td>－</td></tr><tr><td>西浦保育園</td><td>児童福祉施設</td><td>西浦</td><td>1982</td><td>1,184</td><td>101,654,000</td><td>95</td><td>－</td></tr><tr><td>形原北保育園</td><td>児童福祉施設</td><td>形原</td><td>1967</td><td>921</td><td>63,981,000</td><td>83</td><td>－</td></tr><tr><td>塩津北保育園</td><td>児童福祉施設</td><td>塩津</td><td>1978</td><td>552</td><td>35,740,000</td><td>35</td><td>－</td></tr><tr><td>おおつか児童館</td><td>児童福祉施設</td><td>大塚</td><td>1999</td><td>486</td><td>16,655,000</td><td>16,329</td><td>－</td></tr><tr><td>みや児童館</td><td>児童福祉施設</td><td>三谷</td><td>1996</td><td>490</td><td>12,914,000</td><td>22,708</td><td>－</td></tr><tr><td>がまごおり児童館</td><td>児童福祉施設</td><td>蒲郡南</td><td>2011</td><td>591</td><td>13,769,000</td><td>29,471</td><td>－</td></tr><tr><td>ちゅうぶ児童館</td><td>児童福祉施設</td><td>蒲郡北</td><td>2005</td><td>569</td><td>10,741,000</td><td>31,096</td><td>－</td></tr><tr><td>しおつ児童館</td><td>児童福祉施設</td><td>塩津</td><td>2001</td><td>510</td><td>18,649,000</td><td>25,467</td><td>－</td></tr><tr><td>かたはら児童館</td><td>児童福祉施設</td><td>形原</td><td>1991</td><td>349</td><td>11,309,000</td><td>21,090</td><td>－</td></tr><tr><td>にしうら児童館</td><td>児童福祉施設</td><td>西浦</td><td>2001</td><td>491</td><td>10,300,000</td><td>20,490</td><td>－</td></tr><tr><td>市民会館</td><td>公民館等施設</td><td>蒲郡北</td><td>1973</td><td>13,233</td><td>145,588,000</td><td>218,146</td><td>－</td></tr><tr><td>蒲郡公民館</td><td>公民館等施設</td><td>蒲郡南</td><td>2013</td><td>806</td><td>7,433,000</td><td>17,696</td><td>－</td></tr><tr><td>小江公民館</td><td>公民館等施設</td><td>蒲郡南</td><td>1975</td><td>677</td><td>7,702,000</td><td>14,807</td><td>－</td></tr><tr><td>府相公民館</td><td>公民館等施設</td><td>蒲郡南</td><td>2019</td><td>595</td><td>－</td><td>－</td><td>－</td></tr><tr><td>東部公民館</td><td>公民館等施設</td><td>蒲郡南</td><td>1973</td><td>695</td><td>7,287,000</td><td>31,902</td><td>－</td></tr><tr><td>北部公民館</td><td>公民館等施設</td><td>蒲郡北</td><td>1977</td><td>551</td><td>6,496,000</td><td>30,430</td><td>－</td></tr><tr><td>西部公民館</td><td>公民館等施設</td><td>蒲郡北</td><td>1975</td><td>418</td><td>6,580,000</td><td>9,808</td><td>－</td></tr><tr><td>三谷公民館</td><td>公民館等施設</td><td>三谷</td><td>1971</td><td>1,951</td><td>16,427,000</td><td>33,161</td><td>－</td></tr><tr><td>塩津公民館</td><td>公民館等施設</td><td>塩津</td><td>1975</td><td>554</td><td>7,645,000</td><td>18,257</td><td>－</td></tr><tr><td>大塚公民館</td><td>公民館等施設</td><td>大塚</td><td>1972</td><td>742</td><td>10,485,000</td><td>30,241</td><td>－</td></tr><tr><td>形原公民館</td><td>公民館等施設</td><td>形原</td><td>2009</td><td>845</td><td>9,000,000</td><td>26,315</td><td>－</td></tr><tr><td>西浦公民館</td><td>公民館等施設</td><td>西浦</td><td>1976</td><td>1,078</td><td>10,263,000</td><td>36,884</td><td>－</td></tr><tr><td>蒲郡南部小学校</td><td>学校教育施設</td><td>蒲郡南</td><td>1949</td><td>6,952</td><td>55,057,000</td><td>326</td><td>－</td></tr><tr><td>蒲郡東部小学校</td><td>学校教育施設</td><td>蒲郡南</td><td>1966</td><td>5,231</td><td>35,865,000</td><td>291</td><td>－</td></tr><tr><td>蒲郡北部小学校</td><td>学校教育施設</td><td>蒲郡北</td><td>1952</td><td>4,854</td><td>42,234,000</td><td>314</td><td>－</td></tr><tr><td>蒲郡西部小学校</td><td>学校教育施設</td><td>蒲郡北</td><td>1952</td><td>3,756</td><td>40,451,000</td><td>71</td><td>－</td></tr><tr><td>三谷小学校</td><td>学校教育施設</td><td>三谷</td><td>1957</td><td>6,147</td><td>47,377,000</td><td>230</td><td>－</td></tr><tr><td>塩津小学校</td><td>学校教育施設</td><td>塩津</td><td>1960</td><td>7,278</td><td>38,440,000</td><td>530</td><td>－</td></tr><tr><td>大塚小学校</td><td>学校教育施設</td><td>大塚</td><td>1956</td><td>5,405</td><td>34,517,000</td><td>290</td><td>－</td></tr><tr><td>形原小学校</td><td>学校教育施設</td><td>形原</td><td>1967</td><td>6,261</td><td>47,028,000</td><td>351</td><td>－</td></tr><tr><td>西浦小学校</td><td>学校教育施設</td><td>西浦</td><td>1953</td><td>6,242</td><td>44,679,000</td><td>235</td><td>－</td></tr><tr><td>形原北小学校</td><td>学校教育施設</td><td>形原</td><td>1966</td><td>6,447</td><td>43,486,000</td><td>547</td><td>－</td></tr><tr><td>中央小学校</td><td>学校教育施設</td><td>蒲郡北</td><td>1966</td><td>6,409</td><td>43,764,000</td><td>310</td><td>－</td></tr><tr><td>三谷東小学校</td><td>学校教育施設</td><td>三谷</td><td>1957</td><td>6,765</td><td>39,536,000</td><td>317</td><td>－</td></tr><tr><td>竹島小学校</td><td>学校教育施設</td><td>蒲郡南</td><td>1973</td><td>6,055</td><td>42,674,000</td><td>332</td><td>－</td></tr><tr><td>蒲郡中学校</td><td>学校教育施設</td><td>蒲郡南</td><td>1960</td><td>9,383</td><td>46,614,000</td><td>489</td><td>－</td></tr><tr><td>三谷中学校</td><td>学校教育施設</td><td>三谷</td><td>1972</td><td>8,032</td><td>47,637,000</td><td>299</td><td>－</td></tr><tr><td>塩津中学校</td><td>学校教育施設</td><td>塩津</td><td>1962</td><td>7,010</td><td>86,280,000</td><td>262</td><td>－</td></tr><tr><td>大塚中学校</td><td>学校教育施設</td><td>大塚</td><td>1957</td><td>7,443</td><td>30,175,000</td><td>162</td><td>－</td></tr><tr><td>形原中学校</td><td>学校教育施設</td><td>形原</td><td>1965</td><td>8,716</td><td>43,418,000</td><td>490</td><td>－</td></tr><tr><td>西浦中学校</td><td>学校教育施設</td><td>西浦</td><td>1962</td><td>7,004</td><td>41,536,000</td><td>108</td><td>－</td></tr><tr><td>中部中学校</td><td>学校教育施設</td><td>蒲郡北</td><td>1977</td><td>7,640</td><td>42,733,000</td><td>347</td><td>－</td></tr><tr><td>ソフィア看護専門学校</td><td>学校教育施設</td><td>蒲郡南</td><td>1998</td><td>4,418</td><td>134,602,000</td><td>112</td><td>－</td></tr><tr><td>学校給食センター</td><td>学校教育施設</td><td>三谷</td><td>2004</td><td>3,692</td><td>669,622,000</td><td>1,443,801</td><td>－</td></tr><tr><td>本庁舎</td><td>庁舎等施設</td><td>蒲郡北</td><td>1961</td><td>19,817</td><td>249,432,000</td><td>－</td><td>－</td></tr><tr><td>消防本部</td><td>消防・防災施設</td><td>蒲郡南</td><td>2009</td><td>5,061</td><td>498,371,000</td><td>－</td><td>－</td></tr><tr><td>東部出張所</td><td>消防・防災施設</td><td>三谷</td><td>1969</td><td>439</td><td>－</td><td>－</td><td>－</td></tr><tr><td>西部出張所</td><td>消防・防災施設</td><td>形原</td><td>1966</td><td>305</td><td>－</td><td>－</td><td>－</td></tr><tr><td>生命の海科学館</td><td>生涯学習施設</td><td>蒲郡南</td><td>1998</td><td>3,297</td><td>106,956,000</td><td>84,785</td><td>－</td></tr><tr><td>博物館</td><td>生涯学習施設</td><td>蒲郡北</td><td>1978</td><td>2,364</td><td>45,738,000</td><td>32,288</td><td>－</td></tr><tr><td>図書館</td><td>生涯学習施設</td><td>蒲郡北</td><td>1969</td><td>2,006</td><td>125,343,000</td><td>307,677</td><td>－</td></tr><tr><td>クリーンセンター</td><td>衛生施設</td><td>西浦</td><td>1997</td><td>7,139</td><td>726,267,000</td><td>－</td><td>－</td></tr><tr><td>リサイクルプラザ</td><td>衛生施設</td><td>西浦</td><td>1999</td><td>3,265</td><td>290,442,000</td><td>－</td><td>－</td></tr><tr><td>一色不燃物最終処分場</td><td>衛生施設</td><td>形原</td><td>1982</td><td>266</td><td>37,294,000</td><td>－</td><td>－</td></tr><tr><td>一般廃棄物最終処分場</td><td>衛生施設</td><td>大塚</td><td>2000</td><td>918</td><td>31,452,000</td><td>－</td><td>－</td></tr><tr><td>海賓館マリンセンターハウス</td><td>観光施設</td><td>蒲郡南</td><td>1996</td><td>278</td><td>3,652,000</td><td>18,052</td><td>－</td></tr><tr><td>竹島水族館</td><td>観光施設</td><td>蒲郡南</td><td>1962</td><td>1,996</td><td>73,001,000</td><td>365,563</td><td>－</td></tr><tr><td>海辺の文学記念館</td><td>観光施設</td><td>蒲郡南</td><td>1983</td><td>347</td><td>5,471,000</td><td>16,269</td><td>－</td></tr><tr><td>ナビテラス</td><td>観光施設</td><td>蒲郡南</td><td>2012</td><td>429</td><td>6,160,000</td><td>35,497</td><td>－</td></tr><tr><td>西浦温泉レストハウス</td><td>観光施設</td><td>西浦</td><td>1966</td><td>140</td><td>249,000</td><td>－</td><td>－</td></tr><tr><td>竹島レストハウス</td><td>観光施設</td><td>蒲郡南</td><td>1967</td><td>128</td><td>120,000</td><td>－</td><td>－</td></tr><tr><td>グラウンド</td><td>運動・公園施設</td><td>西浦</td><td>1972</td><td>2,046</td><td>－</td><td>－</td><td>－</td></tr><tr><td>武道館</td><td>運動・公園施設</td><td></td><td>1980</td><td>5,049</td><td>－</td><td>－</td><td>－</td></tr><tr><td>文化広場</td><td>運動・公園施設</td><td>形原</td><td>1983</td><td>1,857</td><td>12,724,000</td><td>27,327</td><td>－</td></tr><tr><td>浜町テニスコート</td><td>運動・公園施設</td><td>塩津</td><td>1989</td><td>89</td><td>2,524,000</td><td>11,761</td><td>－</td></tr><tr><td>金平テニスコート</td><td>運動・公園施設</td><td>形原</td><td>1987</td><td>242</td><td>9,143,000</td><td>16,657</td><td>－</td></tr><tr><td>さがらの森</td><td>運動・公園施設</td><td>大塚</td><td>1974</td><td>500</td><td>2,322,000</td><td>4,507</td><td>－</td></tr><tr><td>中央公園</td><td>運動・公園施設</td><td>蒲郡北</td><td>1980</td><td>148</td><td>18,720,000</td><td>－</td><td>－</td></tr><tr><td>双太山公園</td><td>運動・公園施設</td><td>形原</td><td>1989</td><td>220</td><td>6,663,000</td><td>－</td><td>－</td></tr><tr><td>春日浦公園</td><td>運動・公園施設</td><td>形原</td><td>1998</td><td>78</td><td>3,808,000</td><td>－</td><td>－</td></tr>
+</table>
+</div>
+<p class="src">支出・利用者数は白書掲載の6ヵ年度（平成26〜令和元年度）平均値（単年度の実額ではない）。
+定義は施設用途により異なる（来館者数・児童数・給食提供食数など）。
+詳細と出典ページは<a href="https://github.com/okaviet123/okaviet123.github.io/tree/main/GAMAGORI">リポジトリのCSV</a>を参照。</p>
+<script>
+  const q = document.getElementById("q"), rows = document.querySelectorAll("#t tr");
+  q.addEventListener("input", () => {
+    const v = q.value.trim();
+    rows.forEach((tr, i) => { if (i) tr.style.display = tr.textContent.includes(v) ? "" : "none"; });
+  });
+</script>
+
+<div class="tip" id="tip"></div>
+
+<script>
+  const tip = document.getElementById("tip");
+  if (tip) document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      tip.textContent = el.dataset.tip; tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 240) + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.style.display = "none");
+  });
+</script>
+
+</body></html>
