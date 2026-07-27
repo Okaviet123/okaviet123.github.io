@@ -187,7 +187,13 @@ def blank_text_pages(lines):
         if ln.strip():
             page_has_text[pg] = True
     max_text_page = max((pg for pg, has in page_has_text.items() if has), default=0)
-    return {pg for pg, has in page_has_text.items() if not has and pg < max_text_page}
+    # 完全に空のページは連続\fにより行が1本も生成されないことがあるため、
+    # 1..max_text_page の範囲で「テキストを持つ行が無いページ」を空白ページとする
+    return {
+        pg
+        for pg in range(1, max_text_page + 1)
+        if not page_has_text.get(pg, False)
+    }
 
 
 def split_facilities(lines):
@@ -204,15 +210,23 @@ def split_facilities(lines):
     for idx, start in enumerate(starts):
         end = starts[idx + 1] if idx + 1 < len(starts) else len(lines)
         block = lines[start:end]
-        # ブロック内の空白ページ(先頭ページ以外)で分割
+        # ブロック内の空白ページ(先頭ページ以外)で分割。
+        # 空白ページ自体は行を生成しないことがあるため「空白ページより後の最初の行」で切る。
+        blank_in_block = sorted(
+            pg for pg in blanks if block[0][1] < pg <= block[-1][1]
+        )
         cut = None
-        for j, (_ln, pg) in enumerate(block):
-            if pg in blanks and pg > block[0][1]:
-                cut = j
-                break
+        blank_pg = None
+        if blank_in_block:
+            blank_pg = blank_in_block[0]
+            for j, (_ln, pg) in enumerate(block):
+                if pg >= blank_pg:
+                    cut = j
+                    break
         if cut is not None and any(ln.strip() for ln, _pg in block[cut:]):
             blocks.append((None, block[:cut]))
-            blocks.append((block[cut][1], block[cut:]))
+            # 出典ページが空白ページ(=画像の1ページ目)から始まるよう疑似行を先頭に置く
+            blocks.append((blank_pg, [("", blank_pg)] + block[cut:]))
         else:
             blocks.append((None, block))
     return len(starts), blocks
