@@ -14,6 +14,26 @@ ROOT = Path(__file__).parent
 SITE = ROOT / "SITE"
 
 AUTHOR_NAME = "【実名をここに】"  # 公開前に必ず差し替えること
+REVIEWER_NAME = "かなこ"  # 事実確認をお願いする相手
+INCLUDE_VERIFY_BANNER = True  # 8/10の本公開直前にFalseにして、確認バナーなしの版を作る
+
+# 確認用の原本PDF一覧: (資料名, 使うページ, 直接URL)
+# ダウンロード元がすべて豊橋市の公式サイトそのものであること(こちらで加工した
+# 抜粋ではないこと)が、quality_bar.mdの原則(検証される側が検証材料を作らない)。
+VERIFY_MATERIALS = [
+    ("豊橋市公共施設等総合管理計画2026-2055（令和8年3月）", "p.52-53（主要な数字）／p.34（108.9億円）",
+     "https://www.city.toyohashi.lg.jp/secure/122819/koukyousisetutousougoukannrikeikaku2026-2055.pdf"),
+    ("公共施設白書2025 個別票「行政系施設」", "p.1-2（市役所）",
+     "https://www.city.toyohashi.lg.jp/secure/117134/kobetuhyougyouseikeisisetu.pdf"),
+    ("公共施設白書2025 個別票「スポーツ系施設」", "p.1-2（総合体育館）",
+     "https://www.city.toyohashi.lg.jp/secure/117134/kobetuhyousupo-tusisetu.pdf"),
+    ("公共施設白書2025 個別票「その他施設」", "p.1-2（競輪場）",
+     "https://www.city.toyohashi.lg.jp/secure/117134/kobetuhyousonotasisetu.pdf"),
+    ("公共施設白書2025 個別票「文化・社会教育系施設」", "p.149-150／159-160／167-168（アイプラザ・図書館・動植物公園）",
+     "https://www.city.toyohashi.lg.jp/secure/117134/kobetuhyoubunnkashakaikyouikukeisisetu.pdf"),
+    ("公共施設白書2025 個別票「子育て系施設」", "p.47-48（こども未来館）",
+     "https://www.city.toyohashi.lg.jp/secure/117134/kobetuhyoukosodatesisetu.pdf"),
+]
 
 CSS = """
   :root { color-scheme: light; }
@@ -76,6 +96,27 @@ CSS = """
   input[type=search] { width:100%; box-sizing:border-box; padding:8px 12px;
     border:1px solid var(--border); border-radius:8px; font-size:.9rem;
     background:var(--surface-1); color:var(--ink-1); margin-bottom:8px; }
+
+  /* ---- 確認依頼バナー(かなこさん向け・公開前レビュー用。公開時はremove_verify_banner()で除去) ---- */
+  .verify-banner { background:var(--surface-1); border:1.5px solid var(--s2);
+    border-radius:12px; padding:22px 24px; margin-bottom:8px; }
+  .vb-eyebrow { font-size:.78rem; font-weight:700; letter-spacing:.03em; color:var(--s2);
+    text-transform:uppercase; margin:0 0 6px; }
+  .vb-title { font-size:1.2rem; margin:0 0 10px; }
+  .vb-lead { font-size:.9rem; color:var(--ink-2); margin:0 0 14px; }
+  .vb-steps { margin:0 0 12px; padding-left:1.3em; font-size:.88rem; }
+  .vb-steps li { margin-bottom:6px; }
+  .vb-note { font-size:.82rem; color:var(--ink-muted); margin:0 0 18px; }
+  .vb-materials-title { font-size:.85rem; font-weight:600; margin:0 0 8px; }
+  .verify-banner table { font-size:.82rem; }
+  .verify-banner th:last-child, .verify-banner td:last-child { text-align:right; white-space:nowrap; }
+  .vb-dl { display:inline-block; background:var(--s2); color:#fff; text-decoration:none;
+    padding:5px 12px; border-radius:6px; font-size:.78rem; font-weight:600; }
+  .vb-dl:hover { opacity:.88; }
+  .vb-divider { text-align:center; font-size:.8rem; color:var(--ink-muted);
+    margin:22px 0 28px; position:relative; }
+  .vb-divider::before, .vb-divider::after { content:""; display:block; height:1px;
+    background:var(--grid); margin:10px 0; }
 """
 
 TIP_JS = """
@@ -208,12 +249,43 @@ def nendai_svg(nendai):
 </svg>"""
 
 
+def verify_banner_html():
+    rows = "".join(
+        f"<tr><td>{H.escape(name)}</td><td>{H.escape(pages)}</td>"
+        f'<td><a class="vb-dl" href="{url}" target="_blank" rel="noopener">PDFを開く</a></td></tr>'
+        for name, pages, url in VERIFY_MATERIALS)
+    return f"""
+<div class="verify-banner">
+  <p class="vb-eyebrow">{H.escape(REVIEWER_NAME)}さんへ — 公開前の確認をお願いします</p>
+  <h2 class="vb-title">この内容が合っているか、見てもらえますか</h2>
+  <p class="vb-lead">下に続くのが、実際にこのまま公開する予定のレポート本文です。
+  まずひと通り読んでから、次の3点だけ確認してください。</p>
+  <ol class="vb-steps">
+    <li><b>数字の写し間違いがないか</b> — 下の表のPDFを開いて、レポート中の
+    「約1,124億円」「66%」などの数字と見比べてください。</li>
+    <li><b>実感と合うか</b> — 知っている施設の情報（市役所・総合体育館など）に
+    違和感がないか。</li>
+    <li><b>読んで分かるか</b> — 意味の分からない言葉や、引っかかる言い回しがあれば教えてください。</li>
+  </ol>
+  <p class="vb-note">「わからない」「自信がない」もそのまま教えてください。それも大事な答えです。</p>
+  <p class="vb-materials-title">確認用の原本PDF（豊橋市の公式サイトからそのままダウンロード。加工していません）</p>
+  <div class="tblwrap"><table>
+    <tr><th>資料</th><th>使うページ</th><th></th></tr>
+    {rows}
+  </table></div>
+</div>
+<div class="vb-divider">↓ ここから下が、実際に公開するレポート本文です ↓</div>
+"""
+
+
 def build_index():
     nendai = read_csv("derived_nendai_bunpu.csv")
     nendai_rows = "".join(
         f'<tr><td>{r["建築年代"]}</td><td>{r["施設数"]}</td>'
         f'<td>{fmt(r["延床面積合計_m2"], "㎡")}</td></tr>' for r in nendai)
+    verify_banner = verify_banner_html() if INCLUDE_VERIFY_BANNER else ""
     body = f"""
+{verify_banner}
 <h1>豊橋市の公共施設 — これから30年のお金の地図</h1>
 <p class="sub">豊橋市 公開情報の地図 #1（2026年8月10日公開）</p>
 
