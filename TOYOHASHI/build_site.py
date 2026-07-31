@@ -318,6 +318,44 @@ def nendai_svg(nendai):
 </svg>"""
 
 
+BUDGET_CATEGORIES = [
+    # (費目名, 億円, 説明, インフラ整備に該当するか)
+    ("民生費", 620, "子育て・福祉・医療に", False),
+    ("教育費", 183, "学校教育・社会教育に", False),
+    ("衛生費", 171, "健康増進・ごみ処理に", False),
+    ("土木費", 148, "道路・河川・まちづくりに", True),
+    ("総務費", 126, "防災・市役所の運営等に", False),
+    ("公債費", 100, "借り入れたお金の返済に", False),
+    ("消防費", 34, "消防・救急活動に", False),
+    ("その他", 33, "議会運営や農林水産業振興に", False),
+    ("商工費", 29, "産業・観光振興に", False),
+]
+
+
+def budget_rank_svg():
+    """目的別歳出(一般会計・令和6年度)を大きい順の横棒で。土木費(インフラ整備)を強調。"""
+    x0, x1, row_h, gap = 96, 760, 30, 8
+    maxv = BUDGET_CATEGORIES[0][1]
+    px = (x1 - x0) / maxv
+    bars, y = [], 14
+    for name, v, desc, is_infra in BUDGET_CATEGORIES:
+        w = v * px
+        color = "var(--s2)" if is_infra else "var(--ctx)"
+        tag = "（インフラ整備）" if is_infra else ""
+        bars.append(
+            f'<text class="lab-t" x="{x0-8}" y="{y+row_h/2+4:.0f}" text-anchor="end">{name}</text>'
+            f'<rect class="bar-seg" data-tip="{name}{tag}: {v}億円 — {desc}" '
+            f'x="{x0}" y="{y}" width="{w:.1f}" height="{row_h}" fill="{color}" rx="4"/>'
+            f'<text class="val-t" x="{x0+w+8:.1f}" y="{y+row_h/2+4:.0f}">{v}億円{tag}</text>'
+        )
+        y += row_h + gap
+    total = sum(v for _, v, _, _ in BUDGET_CATEGORIES)
+    return f"""<svg viewBox="0 0 800 {y}" role="img"
+  aria-label="目的別歳出を大きい順に表示。土木費(インフラ整備)は148億円で4位">
+  {''.join(bars)}
+</svg>""", total
+
+
 def verify_banner_html():
     rows = "".join(
         f"<tr><td>{H.escape(name)}</td><td>{H.escape(pages)}</td>"
@@ -354,6 +392,10 @@ def build_index():
         f'<td>{fmt(r["延床面積合計_m2"], "㎡")}</td></tr>' for r in nendai)
     verify_banner = verify_banner_html() if INCLUDE_VERIFY_BANNER else ""
     publish_label = "2026年8月10日公開" if IS_PUBLISHED else "2026年8月10日公開予定"
+    budget_svg, budget_total = budget_rank_svg()
+    budget_rows = "".join(
+        f"<tr><td>{name}{'（インフラ整備）' if infra else ''}</td><td>{v}</td>"
+        f"<td>{desc}</td></tr>" for name, v, desc, infra in BUDGET_CATEGORIES)
     body = f"""
 {verify_banner}
 <h1>豊橋市の公共施設 — これから30年のお金の地図</h1>
@@ -472,6 +514,23 @@ def build_index():
   </div>
 </div>
 
+<div class="card">
+  <p class="chart-title">この話は、市の予算全体の中でどのくらいの規模か</p>
+  <p class="chart-sub">令和6年度・一般会計の歳出を目的別に大きい順で並べたもの（合計{budget_total:,}億円）。
+  「インフラ整備」にあたるのは道路・河川・まちづくりを担う土木費で、9項目中4位。</p>
+  {budget_svg}
+  <p style="margin:10px 0 0; font-size:.82rem; color:var(--ink-2)">
+  このレポートの主題である公共施設の維持・更新費（年約108.9億円）は、上のどれか一つの費目
+  ではありません。学校（教育費）、市民館（総務費・民生費など）、道路に付随する施設（土木費）
+  というように、複数の目的別費目にまたがって計上されています。</p>
+  <details><summary>データ表を開く</summary>
+    <div class="tblwrap"><table>
+      <tr><th>費目</th><th>金額（億円）</th><th>主な使いみち</th></tr>
+      {budget_rows}
+    </table></div>
+  </details>
+</div>
+
 <h2>裏付け表</h2>
 <p class="sub">「延べ床面積20%削減」の対象になりうるのは、この416施設です。</p>
 <ul>
@@ -537,6 +596,8 @@ def build_index():
   <a href="https://www.city.toyohashi.lg.jp/34019.htm">豊橋市公共施設白書2025</a> 個別票。
   白書の対象は公称417施設（軟式庭球場①・②が1枚の個別票にまとめられているため、
   個別票は416票。本サイトの「416施設」は個別票の数）。<br>
+  目的別歳出（令和6年度・一般会計）—
+  <a href="https://www.city.toyohashi.lg.jp/62169.htm">わかりやすい豊橋の財政（令和6年度版）</a>。<br>
   施設タイプ別の検討方針の引用 —
   <a href="https://www.city.toyohashi.lg.jp/64296.htm">豊橋市施設最適化計画2026-2035</a>（令和8年3月）p.33-34。<br>
   意見募集結果は各計画の「意見募集結果」PDF（豊橋市サイト内、各計画のページに掲載）。<br>
