@@ -1,27 +1,34 @@
 #!/usr/bin/env python3
 """SITE/ の公開ページ一式を DATA/ のCSVから生成する。
-`SKILLS/muni-facility-report/scripts/build_site.py`（汎用テンプレート）を
-蒲郡市向けに書き換えたもの。
 
-HERO_NUMBERSは`RAW/keikaku/jisshi_keikaku_honpen.pdf`（公共施設マネジメント
-実施計画・本編）p.14-15の図表1-14と目標設定の記述から実データを反映した
-（2026-07-27）。同計画には「50年間のライフサイクルコスト試算」（白書の
-試算をもとにした数値）と、計画期間である「30年間」への換算値の両方が
-記載されている。本サイトの表題を30年で統一するため、50年間の試算値
-（必要1,801億円・実績930億円・不足871億円）を、市が523億円（目標②）を
-算出した際と同じ比率（÷50年×30年）で当方が30年換算している
-（市の発表そのものではないので「当方の集計」と明記）。市が直接30年換算
-して発表している数値は不足額523億円のみで、これはそのまま「市の発表」
-として扱う。
+構成は豊橋#1（`claude/toyohashi-public-info-report-uln82e`ブランチの
+`TOYOHASHI/build_site.py`）に揃えている（2026-07-27、ユーザー指示）。
+移植したもの・しなかったものの判断基準は「蒲郡市の実データがあるか」:
 
-配色・マーク仕様は dataviz skill の references/palette.md に準拠。
-新しい市でも validate_palette.js を必ず実行してから使うこと
-（palette.md の3色スロットはCVD検証済みだが、別の色を選ぶ場合は要再検証）。
+- 移植した: KPIグリッド（数字を畳みかける導入）／築年数の色分けピル／
+  中核2図表の横並びレイアウト／目的別歳出の順位グラフ（財政状況資料集
+  R6年度の実データ）／施設用途ごとの具体的な検討方針の引用（公民館・学校・
+  図書館、実施計画本編からの実際の記載）／レビュー用コピーを別ディレクトリに
+  出力する仕組み（`build_review_copy()`）。
+- 移植しなかった: パブリックコメント（意見募集）の実施結果セクション。
+  蒲郡市の総合管理計画・実施計画には、この種の意見募集の記載が見当たらない
+  （唯一ヒットした「意見募集」は本文中で他市＝横浜市の事例として紹介されて
+  いるもので、蒲郡市自身の実施結果ではない）。存在しないデータを豊橋#1に
+  合わせて創作することはしない。
+
+HERO_NUMBERSの根拠は`RAW/keikaku/jisshi_keikaku_honpen.pdf`p.14-15
+（詳細はHERO_NUMBERSのコメント参照）。目的別歳出は`RAW/kessancard/
+zaisei_R06.xlsx`の「普通会計の状況」シートから実額を転記。
 
 生成物:
-- SITE/index.html    表紙 + 中核図表(お金のギャップ・築年代分布) + 出典
+- SITE/index.html    表紙 + KPI + 中核図表2枚 + 歳出内訳 + 検討方針の引用 + 出典
 - SITE/kouku.html    地域単位別サマリー表
-- SITE/shisetsu.html 全施設一覧表(テキスト絞り込み付き)
+- SITE/shisetsu.html 全施設一覧表(築年数ピル・テキスト絞り込み付き)
+
+レビュー用コピー（確認バナーあり・実名プレースホルダー）を作るには:
+  python3 -c "import build_site; build_site.build_review_copy()"
+→ SITE_REVIEW/ 配下に同じ3ページを生成する。SITE/（GitHub Pages公開先）
+  には一切影響しない。
 """
 import csv
 import html as H
@@ -32,11 +39,34 @@ SITE = ROOT / "SITE"
 
 # ==== ★蒲郡市向け設定 ====
 CITY_NAME = "蒲郡市"
-AUTHOR_NAME = "【実名をここに】"  # ★公開前に必ず実名に置き換えること（プレースホルダのまま公開しない）
+AUTHOR_NAME = "【実名をここに】"  # ★公開前に必ず実名に置き換えること
+REVIEWER_NAME = "【レビュアーの名前をここに】"  # 事実確認をお願いする相手（未確定）
 DISTRICT_COL = "地区"       # analyze_shisetsu.py の DISTRICT_COL と一致（大塚/三谷/蒲郡北/蒲郡南/塩津/形原/西浦）
 DISTRICT_LABEL = "地区"     # 表の見出しに使う短い呼び名
 PUBLISH_DATE = "未定"      # データ取得・検証が終わるまで確定させない
 GITHUB_REPO_URL = "https://github.com/okaviet123/okaviet123.github.io/tree/main/GAMAGORI"
+BASE_YEAR = 2026            # 築年数の基準年（analyze_shisetsu.pyのBASE_YEARと合わせる）
+
+# リポジトリの既定値 = 外部公開仕様（実名・バナーなし）。AUTHOR_NAMEが
+# プレースホルダのままの間はSITE/を実際にデプロイしないこと。
+# レビュー用（バナーあり・プレースホルダー名）が必要なときは、この既定値を
+# 書き換えず、以下のように一時上書きして別ディレクトリに出力する:
+#   import build_site
+#   build_site.build_review_copy()
+INCLUDE_VERIFY_BANNER = False
+IS_PUBLISHED = False  # 公開日が確定してTrueにするまでは常に「公開予定」と表示
+
+# 確認用の原本PDF一覧: (資料名, 使うページ, 直接URL)
+# ダウンロード元がすべて蒲郡市の公式サイトそのものであること（こちらで加工した
+# 抜粋ではないこと）が、quality_bar.mdの原則（検証される側が検証材料を作らない）。
+VERIFY_MATERIALS = [
+    ("蒲郡市公共施設マネジメント実施計画（本編）(平成29年3月)", "p.14-15（30年収支の柱の数字）／p.34,53（検討方針の引用）",
+     "https://www.city.gamagori.lg.jp/uploaded/attachment/41055.pdf"),
+    ("蒲郡市公共施設白書（令和2年度改訂版、令和3年3月）", "各施設の該当ページ（一覧表内に記載）",
+     "https://www.city.gamagori.lg.jp/uploaded/attachment/74398.pdf"),
+    ("財政状況資料集 令和6年度版（Excel）「普通会計の状況」シート", "目的別歳出の内訳",
+     "https://www.city.gamagori.lg.jp/unit/zaimu/zaiseijyokyoshiryosyu.html"),
+]
 
 # 30年収支試算（単位: 億円）。2026-07-27、RAW/keikaku/jisshi_keikaku_honpen.pdf
 # （公共施設マネジメント実施計画・本編）p.14-15を実際に読んで確定。
@@ -68,7 +98,69 @@ HERO_NUMBERS = {
                         "計画期間である30年間に、市が523億円を算出したのと同じ比率"
                         "（÷50年×30年）で当方が換算",
 }
-# ======================================
+
+# 築年数の色分け帯。「40年」はレポートの主題（30年で維持更新費用を縮減する
+# 前提として「概ね3割の床面積を縮減」）と揃え、40年以上を濃い色にする。
+# 色はdataviz skillの sequential blue ramp（references/palette.md）のステップ。
+AGE_BANDS = [
+    (0, 20, "#86b6ef", "#0b0b0b", "築20年未満"),
+    (20, 40, "#5598e7", "#0b0b0b", "築20〜39年"),
+    (40, 60, "#2a78d6", "#ffffff", "築40〜59年"),
+    (60, 80, "#1c5cab", "#ffffff", "築60〜79年"),
+    (80, 999, "#104281", "#ffffff", "築80年以上"),
+]
+
+
+def age_pill(built_year):
+    """建築年度→色付きピル（築年数バッジ）のHTMLを返す。年度不明なら灰色。"""
+    if not built_year:
+        return '<span class="age-pill age-pill-na">不明</span>'
+    age = BASE_YEAR - int(built_year)
+    for lo, hi, bg, fg, _ in AGE_BANDS:
+        if lo <= age < hi:
+            return (f'<span class="age-pill" style="background:{bg};color:{fg}">'
+                    f'{age}年</span>')
+    return '<span class="age-pill age-pill-na">不明</span>'
+
+
+# 目的別歳出（普通会計・令和6年度実績）。単位: 億円。
+# RAW/kessancard/zaisei_R06.xlsx「普通会計の状況」シート（列CD〜DD）から
+# 実額を千円単位で転記し÷100,000した（2026-07-27）。
+# (費目名, 億円, 説明, インフラ整備に該当するか)
+BUDGET_CATEGORIES = [
+    ("民生費", 140.7, "子育て・福祉・介護に", False),
+    ("総務費", 132.8, "防災・市役所の運営等に", False),
+    ("衛生費", 59.1, "健康増進・ごみ処理に", False),
+    ("教育費", 45.1, "学校教育・社会教育に", False),
+    ("土木費", 28.4, "道路・河川・まちづくりに", True),
+    ("公債費", 27.1, "借り入れたお金の返済に", False),
+    ("消防費", 13.8, "消防・救急活動に", False),
+    ("商工費", 9.4, "産業・観光振興に", False),
+    ("農林水産業費", 5.2, "農業・漁業の振興に", False),
+    ("議会費", 2.5, "議会の運営に", False),
+    ("労働費", 1.5, "勤労者福祉に", False),
+    ("災害復旧費", 0.2, "災害からの復旧に", False),
+]
+
+# 施設用途ごとの具体的な検討方針。実施計画本編からの実際の記載を引用する
+# （「概ね3割の床面積を縮減」の中身が抽象的な数字ではないことを示す）。
+# (施設用途, 出典ページ, 現状と課題, 基本的な考え方の引用)
+POLICY_QUOTES = [
+    ("公民館（11館）", "53",
+     "平成22年に建てられた形原公民館と、平成26年に建てられた蒲郡公民館以外は老朽化が進んでいます。",
+     "公民館の果たす機能を「社会教育機能」と「地域交流拠点機能」と考えます。"
+     "前者の機能を果たす公民館を全市で1〜3施設に絞り込み、市民向け講座を集中的に実施します。"
+     "後者については、学校内に複合施設を設置し、高齢者の居場所、地域住民のふれあい、"
+     "放課後児童クラブなどの機能を配置することとします。"
+     "老朽化が最も進んでいる府相公民館の代わりとなる施設を設置します。"),
+    ("小学校・中学校（20校）", "53",
+     "全ての小中学校に耐震性能がありますが、昭和55年と比べ平成22年には年少人口（0〜14歳）が半分近く減少しています。",
+     "将来の児童・生徒数に見合う規模にするため保有面積を適正規模に削減します。"
+     "小中一貫化や統合などを視野に入れて、地域の実情に見合った学校規模に再編していきます。"),
+    ("図書館", "34",
+     "耐震診断の結果、若干の強度不足が確認されています。敷地内にある旧看護専門学校の建物は、老朽化が著しく危険な状態です。",
+     "より魅力のある図書館の設置に向けて、早期に機能移転や複合化の検討を行います。"),
+]
 
 CSS = """
   :root { color-scheme: light; }
@@ -123,7 +215,7 @@ CSS = """
           font-variant-numeric:tabular-nums; width:100%; }
   th,td { border-bottom:1px solid var(--grid); padding:5px 12px 5px 0;
           text-align:right; font-size:.82rem; white-space:nowrap; }
-  th:first-child, td:first-child { text-align:left; white-space:normal; }
+  th:first-child, td:first-child { text-align:left; white-space:normal; min-width:9em; }
   th { color:var(--ink-2); font-weight:600; }
   .src { font-size:.78rem; color:var(--ink-muted); margin-top:14px; line-height:1.6; }
   .src a, .nav a { color:inherit; }
@@ -131,6 +223,51 @@ CSS = """
   input[type=search] { width:100%; box-sizing:border-box; padding:8px 12px;
     border:1px solid var(--border); border-radius:8px; font-size:.9rem;
     background:var(--surface-1); color:var(--ink-1); margin-bottom:8px; }
+
+  /* ---- 確認依頼バナー(レビュー用。公開版には出さない) ---- */
+  .verify-banner { background:var(--surface-1); border:1.5px solid var(--s2);
+    border-radius:12px; padding:22px 24px; margin-bottom:8px; }
+  .vb-eyebrow { font-size:.78rem; font-weight:700; letter-spacing:.03em; color:var(--s2);
+    text-transform:uppercase; margin:0 0 6px; }
+  .vb-title { font-size:1.2rem; margin:0 0 10px; }
+  .vb-lead { font-size:.9rem; color:var(--ink-2); margin:0 0 14px; }
+  .vb-steps { margin:0 0 12px; padding-left:1.3em; font-size:.88rem; }
+  .vb-steps li { margin-bottom:6px; }
+  .vb-note { font-size:.82rem; color:var(--ink-muted); margin:0 0 18px; }
+  .vb-materials-title { font-size:.85rem; font-weight:600; margin:0 0 8px; }
+  .verify-banner table { font-size:.82rem; }
+  .verify-banner th:last-child, .verify-banner td:last-child { text-align:right; white-space:nowrap; }
+  .vb-dl { display:inline-block; background:var(--s2); color:#fff; text-decoration:none;
+    padding:5px 12px; border-radius:6px; font-size:.78rem; font-weight:600; }
+  .vb-dl:hover { opacity:.88; }
+  .vb-divider { text-align:center; font-size:.8rem; color:var(--ink-muted);
+    margin:22px 0 28px; position:relative; }
+  .vb-divider::before, .vb-divider::after { content:""; display:block; height:1px;
+    background:var(--grid); margin:10px 0; }
+
+  /* ---- 築年数ピル(全施設一覧) ---- */
+  .age-pill { display:inline-block; padding:2px 8px; border-radius:999px;
+    font-size:.76rem; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .age-pill-na { background:var(--grid); color:var(--ink-muted); }
+  .age-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
+    font-size:.78rem; color:var(--ink-2); margin:0 0 14px; }
+  .age-legend .age-pill { margin-right:5px; }
+
+  /* ---- KPIグリッド(数字を畳みかける導入) ---- */
+  .kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:2px;
+    background:var(--border); border:1px solid var(--border); border-radius:10px;
+    overflow:hidden; margin-bottom:20px; }
+  .kpi-tile { background:var(--surface-1); padding:16px 14px; min-width:0; }
+  .kpi-eyebrow { font-size:.72rem; font-weight:700; letter-spacing:.02em;
+    color:var(--ink-muted); margin:0 0 4px; }
+  .kpi-value { font-size:1.8rem; font-weight:700; line-height:1.1; margin:0; }
+  .kpi-value small { font-size:1rem; font-weight:600; }
+  .kpi-note { font-size:.74rem; color:var(--ink-2); margin:4px 0 0; line-height:1.5; }
+  .chart-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; }
+  @media (max-width: 720px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-row { grid-template-columns: 1fr; }
+  }
 """
 
 TIP_JS = """
@@ -272,18 +409,92 @@ def nendai_svg(nendai):
 </svg>"""
 
 
+def budget_rank_svg():
+    """目的別歳出(一般会計・令和6年度)を大きい順の横棒で。土木費(インフラ整備)を強調。"""
+    x0, x1, row_h, gap = 96, 690, 26, 7  # x1の右に金額ラベルの余白を確保
+    maxv = BUDGET_CATEGORIES[0][1]
+    px = (x1 - x0) / maxv
+    bars, y = [], 12
+    for name, v, desc, is_infra in BUDGET_CATEGORIES:
+        w = v * px
+        color = "var(--s2)" if is_infra else "var(--ctx)"
+        tag = "（インフラ整備）" if is_infra else ""
+        bars.append(
+            f'<text class="lab-t" x="{x0-8}" y="{y+row_h/2+4:.0f}" text-anchor="end">{name}</text>'
+            f'<rect class="bar-seg" data-tip="{name}{tag}: {v}億円 — {desc}" '
+            f'x="{x0}" y="{y}" width="{w:.1f}" height="{row_h}" fill="{color}" rx="4"/>'
+            f'<text class="val-t" x="{x0+w+8:.1f}" y="{y+row_h/2+4:.0f}">{v}億円{tag}</text>'
+        )
+        y += row_h + gap
+    total = sum(v for _, v, _, _ in BUDGET_CATEGORIES)
+    return f"""<svg viewBox="0 0 800 {y}" role="img"
+  aria-label="目的別歳出を大きい順に表示。土木費(インフラ整備)は28.4億円で5位">
+  {''.join(bars)}
+</svg>""", total
+
+
+def verify_banner_html():
+    rows = "".join(
+        f"<tr><td>{H.escape(name)}</td><td>{H.escape(pages)}</td>"
+        f'<td><a class="vb-dl" href="{url}" target="_blank" rel="noopener">開く</a></td></tr>'
+        for name, pages, url in VERIFY_MATERIALS)
+    return f"""
+<div class="verify-banner">
+  <p class="vb-eyebrow">{H.escape(REVIEWER_NAME)}さんへ — 公開前の確認をお願いします</p>
+  <h2 class="vb-title">この内容が合っているか、見てもらえますか</h2>
+  <p class="vb-lead">下に続くのが、実際にこのまま公開する予定のレポート本文です。
+  まずひと通り読んでから、次の3点だけ確認してください。</p>
+  <ol class="vb-steps">
+    <li><b>数字の写し間違いがないか</b> — 下の表のPDF・Excelを開いて、レポート中の
+    「約523億円」「79%」などの数字と見比べてください。</li>
+    <li><b>実感と合うか</b> — 知っている施設の情報（本庁舎・竹島水族館など）に
+    違和感がないか。</li>
+    <li><b>読んで分かるか</b> — 意味の分からない言葉や、引っかかる言い回しがあれば教えてください。</li>
+  </ol>
+  <p class="vb-note">「わからない」「自信がない」もそのまま教えてください。それも大事な答えです。
+  詳しい照合には、別途お渡しする事実確認シート（KAKUNIN/kakunin_sheet.pdf）もご利用ください。</p>
+  <p class="vb-materials-title">確認用の原本（蒲郡市の公式サイトからそのままダウンロード。加工していません）</p>
+  <div class="tblwrap"><table>
+    <tr><th>資料</th><th>使うページ</th><th></th></tr>
+    {rows}
+  </table></div>
+</div>
+<div class="vb-divider">↓ ここから下が、実際に公開するレポート本文です ↓</div>
+"""
+
+
 def build_index():
     h = HERO_NUMBERS
     nendai = read_csv("derived_nendai_bunpu.csv")
+    kouku = read_csv("derived_kouku_summary.csv")
     nendai_rows = "".join(
         f'<tr><td>{r["建築年代"]}</td><td>{r["施設数"]}</td>'
         f'<td>{fmt(r["延床面積合計_m2"], "㎡")}</td></tr>' for r in nendai)
     gap_svg, legend = core_figure_svg()
     breakdown_rows = "".join(
         f"<tr><td>{label}</td><td>約{v:,}</td></tr>" for label, v in h["need_breakdown"])
+    verify_banner = verify_banner_html() if INCLUDE_VERIFY_BANNER else ""
+    publish_label = f"{PUBLISH_DATE}公開" if IS_PUBLISHED else f"{PUBLISH_DATE}公開予定"
+
+    real_districts = [r for r in kouku if r[DISTRICT_COL] != f"（{DISTRICT_COL}記載なし）"]
+    highest = max(real_districts, key=lambda r: float(r["築40年以上_延床比率_%"] or 0))
+    lowest = min(real_districts, key=lambda r: float(r["築40年以上_延床比率_%"] or 0))
+
+    budget_svg, budget_total = budget_rank_svg()
+    budget_rows = "".join(
+        f"<tr><td>{name}{'（インフラ整備）' if infra else ''}</td><td>{v}</td>"
+        f"<td>{desc}</td></tr>" for name, v, desc, infra in BUDGET_CATEGORIES)
+
+    policy_html = "".join(f"""
+  <p style="margin:14px 0 4px"><b>{H.escape(name)}</b></p>
+  <p style="margin:0 0 4px; color:var(--ink-2)">{H.escape(issue)}</p>
+  <p style="margin:0 0 10px; color:var(--ink-2)">「{H.escape(quote)}」——{h['source_plan_name']} p.{page_}</p>
+""" for name, page_, issue, quote in POLICY_QUOTES)
+
     body = f"""
+{verify_banner}
 <h1>{H.escape(CITY_NAME)}の公共施設 — これから30年のお金の地図</h1>
-<p class="sub">{H.escape(CITY_NAME)} 公開情報の地図 #1（{PUBLISH_DATE}公開）</p>
+<p class="sub">{H.escape(CITY_NAME)} 公開情報の地図 #1（{publish_label}）</p>
 
 <p>{H.escape(AUTHOR_NAME)}。{H.escape(CITY_NAME)}で学んだ人間が、{H.escape(CITY_NAME)}の
 公開情報を読む——このレポートは、市が自ら公表している計画書・白書・決算資料を、
@@ -293,54 +504,118 @@ def build_index():
 <div class="card">
   <p class="hero-label">今後30年間で、施設の維持・更新に必要なお金のうち</p>
   <p class="hero">約{h['shortfall']:,}<small>億円が不足</small></p>
-  <p class="hero-note">必要額 約{h['need_total']:,}億円に対し、用意できる見込みは約
-  {h['available_total']:,}億円（約{h['shortfall_pct']}%不足）。市の目標は「建物の更新の際に
-  概ね{h['reduction_target_pct']//10}割（約{h['reduction_target_pct']}%）の床面積を縮減する」こと。
-  ——{h['source_plan_name']} p.{h['source_page_gap']}</p>
+  <p class="hero-note">——{h['source_plan_name']} p.{h['source_page_gap']}</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">必要な費用（30年換算）</p>
+    <p class="kpi-value">{h['need_total']:,}<small>億円</small></p>
+    <p class="kpi-note">p.{h['source_page_gap']}</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">用意できる費用</p>
+    <p class="kpi-value">{h['available_total']:,}<small>億円</small></p>
+    <p class="kpi-note">実績{h['annual_actual']}億円/年×30年</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">市の削減目標</p>
+    <p class="kpi-value">{h['reduction_target_pct']}<small>%程度</small></p>
+    <p class="kpi-note">延べ床面積を、更新の際に</p>
+  </div>
+  <div class="kpi-tile">
+    <p class="kpi-eyebrow">延べ床面積のうち</p>
+    <p class="kpi-value">79<small>%</small></p>
+    <p class="kpi-note">が築40年以上（109施設中）</p>
+  </div>
 </div>
 
 <div class="card">
-  <p class="chart-title">必要なお金と、用意できるお金（30年間換算・建物系施設）</p>
-  <p class="chart-sub">市が白書のライフサイクルコスト試算（平成27年からの50年間）をもとに
-  計画期間の30年に換算した数値。上段: 必要な費用 ／
-  下段: 現在の支出ペース（実績 約{h['annual_actual']}億円/年）を30年続けた場合</p>
-  {gap_svg}
-  <div class="legend">{legend}</div>
-  <details><summary>データ表を開く</summary>
-    <div class="tblwrap"><table>
-      <tr><th>項目</th><th>金額（億円）</th></tr>
-      {breakdown_rows}
-      <tr><td><b>必要な費用 計</b></td><td><b>約{h['need_total']:,}</b></td></tr>
-      <tr><td>用意できる費用（{h['annual_actual']}億円/年×30年、計画の試算値）</td><td>約{h['available_total']:,}</td></tr>
-      <tr><td><b>不足</b></td><td><b>約{h['shortfall']:,}（約{h['shortfall_pct']}%）</b></td></tr>
-    </table></div>
-  </details>
+  <p class="chart-title">あなたの{DISTRICT_LABEL}は、この109施設の中でどうなっているか</p>
+  <p class="chart-sub">「概ね3割縮減」の対象になりうるのは、抽象的な数字ではなく、実在する109施設です。
+  {DISTRICT_LABEL}ごとに事情はまるで違います——延べ床面積のうち築40年以上が占める割合は、
+  {H.escape(highest[DISTRICT_COL])}{DISTRICT_LABEL}で{highest['築40年以上_延床比率_%']}%、
+  {H.escape(lowest[DISTRICT_COL])}{DISTRICT_LABEL}で{lowest['築40年以上_延床比率_%']}%です。</p>
+  <p style="margin:0">
+    <a href="kouku.html">→ {DISTRICT_LABEL}別の一覧を見る</a>
+    <a href="shisetsu.html">→ 全109施設から検索する</a>
+  </p>
 </div>
 
 <div class="card">
-  <p class="chart-title">その建物たちは、いつ建てられたか（建築年代別の延べ床面積）</p>
-  <p class="chart-sub">建築年度が公表されている施設を集計</p>
-  {nendai_svg(nendai)}
+  <p class="chart-title">「概ね3割縮減」の中身として、計画は何を検討するとしているか</p>
+  <p class="chart-sub">具体的にどの施設がどうなるかは、まだ決まっていません。
+  ただし施設の種類ごとの検討の方向性は、すでに計画書に書かれています。3つだけそのまま引用します。</p>
+  {policy_html}
+</div>
+
+<div class="chart-row">
+  <div class="card">
+    <p class="chart-title">必要なお金と、用意できるお金（30年間換算）</p>
+    <p class="chart-sub">市が白書のライフサイクルコスト試算（50年間）を30年に換算した数値。
+    上段: 必要な費用／下段: 現在の支出ペースを30年続けた場合</p>
+    {gap_svg}
+    <div class="legend">{legend}</div>
+    <details><summary>データ表を開く</summary>
+      <div class="tblwrap"><table>
+        <tr><th>項目</th><th>金額（億円）</th></tr>
+        {breakdown_rows}
+        <tr><td><b>必要な費用 計</b></td><td><b>約{h['need_total']:,}</b></td></tr>
+        <tr><td>用意できる費用（{h['annual_actual']}億円/年×30年、計画の試算値）</td><td>約{h['available_total']:,}</td></tr>
+        <tr><td><b>不足</b></td><td><b>約{h['shortfall']:,}（約{h['shortfall_pct']}%）</b></td></tr>
+      </table></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <p class="chart-title">その建物たちは、いつ建てられたか</p>
+    <p class="chart-sub">建築年代別の延べ床面積。建築年度が公表されている109施設を集計</p>
+    {nendai_svg(nendai)}
+    <details><summary>データ表を開く</summary>
+      <div class="tblwrap"><table>
+        <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
+        {nendai_rows}
+      </table></div>
+    </details>
+  </div>
+</div>
+
+<div class="card">
+  <p class="chart-title">この話は、市の予算全体の中でどのくらいの規模か</p>
+  <p class="chart-sub">令和6年度・普通会計の歳出を目的別に大きい順で並べたもの（合計約{budget_total:,.0f}億円）。
+  「インフラ整備」にあたるのは道路・河川・まちづくりを担う土木費で、12項目中5位。</p>
+  {budget_svg}
+  <p style="margin:10px 0 0; font-size:.82rem; color:var(--ink-2)">
+  このレポートの主題である公共施設の維持・更新費（年約{h['annual_actual']}億円）は、上のどれか一つの費目
+  ではありません。学校（教育費）、公民館（総務費・民生費など）、道路に付随する施設（土木費）
+  というように、複数の目的別費目にまたがって計上されています。</p>
   <details><summary>データ表を開く</summary>
     <div class="tblwrap"><table>
-      <tr><th>建築年代</th><th>施設数</th><th>延べ床面積</th></tr>
-      {nendai_rows}
+      <tr><th>費目</th><th>金額（億円）</th><th>主な使いみち</th></tr>
+      {budget_rows}
     </table></div>
   </details>
 </div>
 
 <h2>裏付け表</h2>
+<p class="sub">「延べ床面積概ね3割縮減」の対象になりうるのは、この109施設です。</p>
 <ul>
-  <li><a href="kouku.html">{DISTRICT_LABEL}別に見る</a></li>
-  <li><a href="shisetsu.html">全施設の一覧</a> — 実名・築年数・支出・利用者数（絞り込み可）</li>
+  <li><a href="kouku.html">{DISTRICT_LABEL}別に見る</a> — あなたの{DISTRICT_LABEL}の施設は何棟、そのうち築40年以上は何%か</li>
+  <li><a href="shisetsu.html">全109施設の一覧</a> — 実名・築年数・支出・利用者数（絞り込み可）</li>
 </ul>
 
 <h2>出典と方法</h2>
 <p class="src">
-  30年収支試算・費用内訳・削減目標 —
-  {h['source_plan_name']} p.{h['source_page_gap']}。{h['test_range_note']}。
-  現在の年間実績支出（約{h['annual_actual']}億円）は同計画 p.{h['source_page_annual']}。
-  削減目標 p.{h['source_page_target']}。<br>
+  30年収支試算・削減目標・検討方針の引用 —
+  {h['source_plan_name']} p.{h['source_page_gap']}（30年収支）、p.34・53（検討方針）。
+  {h['test_range_note']}。<br>
+  施設別データ（延べ床面積・建築年度・支出・利用者数）—
+  <a href="https://www.city.gamagori.lg.jp/uploaded/attachment/74398.pdf">蒲郡市公共施設白書（令和2年度改訂版）</a>。
+  白書第3章の施設用途ごとの表と第4章の地区別一覧表から109施設を集計。
+  「市民体育センター」は地区別一覧表では1施設としてしか掲載されておらず（施設用途ごとの表では
+  競技場・武道館の2施設に分かれる）、この2施設のみ地区が「（地区記載なし）」になっている。<br>
+  目的別歳出（令和6年度・普通会計）—
+  <a href="https://www.city.gamagori.lg.jp/unit/zaimu/zaiseijyokyoshiryosyu.html">財政状況資料集</a>。<br>
   すべての取得ファイルのURL・取得日時・ハッシュ値、および集計スクリプトは
   <a href="{GITHUB_REPO_URL}">公開リポジトリ</a>に掲載。
   数字の誤りを見つけた方はリポジトリのIssueでお知らせください。確認のうえ訂正します。
@@ -349,7 +624,7 @@ def build_index():
     (SITE / "index.html").write_text(
         page(f"{CITY_NAME}の公共施設 これから30年のお金の地図", body,
              f"{CITY_NAME}の公式資料から: 公共施設の維持・更新は30年で約{h['shortfall']:,}億円不足。"
-             f"市は延べ床面積{h['reduction_target_pct']}%程度削減を目標に。"),
+             f"市は延べ床面積{h['reduction_target_pct']}%程度削減を目標に。全109施設の実名データ付き。"),
         encoding="utf-8")
     print("wrote index.html")
 
@@ -368,7 +643,8 @@ def build_kouku():
     body = f"""
 <p class="nav"><a href="index.html">← お金の地図（トップ）</a></p>
 <h1>{DISTRICT_LABEL}別に見る {H.escape(CITY_NAME)}の公共施設</h1>
-<p class="sub">延べ床面積の大きい順。複合施設・全市共通施設も所在地の{DISTRICT_LABEL}に計上。</p>
+<p class="sub">出典: 蒲郡市公共施設白書（個別データがある109施設を、白書記載の{DISTRICT_LABEL}で集計）。
+延べ床面積の大きい順。複合施設・全市共通施設も所在地の{DISTRICT_LABEL}に計上している。</p>
 <div class="card tblwrap">
 <table>
 <tr><th>{DISTRICT_LABEL}</th><th>施設数</th><th>延べ床面積</th>
@@ -376,6 +652,8 @@ def build_kouku():
 {tr}
 </table>
 </div>
+<p class="src">「築40年以上」は{BASE_YEAR}年時点・最古棟の建築年度による。
+複合施設は母体施設側に面積計上されるため、{DISTRICT_LABEL}の実感と差が出る場合がある。</p>
 """
     (SITE / "kouku.html").write_text(
         page(f"{DISTRICT_LABEL}別に見る {CITY_NAME}の公共施設", body), encoding="utf-8")
@@ -392,25 +670,38 @@ def build_shisetsu():
         f'<td>{H.escape(r["施設分類_大分類"])}</td>'
         f'<td>{H.escape(r[DISTRICT_COL])}</td>'
         f'<td>{r["建築年度_最古棟"] or "－"}</td>'
+        f'<td>{age_pill(r["建築年度_最古棟"])}</td>'
         f'<td>{fmt(r["延べ床面積合計_m2"])}</td>'
         f'<td>{fmt(r.get(spend_col, ""))}</td>'
         f'<td>{fmt(r.get(users_col, ""))}</td>'
         f'<td>{fmt(r.get(percap_col, ""))}</td></tr>'
         for r in rows)
+    age_legend = "".join(
+        f'<span><span class="age-pill" style="background:{bg};color:{fg}">例</span>{label}</span>'
+        for _, _, bg, fg, label in AGE_BANDS)
     body = f"""
 <p class="nav"><a href="index.html">← お金の地図（トップ）</a></p>
 <h1>{H.escape(CITY_NAME)}の公共施設 全{len(rows)}施設</h1>
-<input type="search" id="q" placeholder="施設名・分類・{DISTRICT_LABEL}で絞り込み">
+<p class="sub">出典: 蒲郡市公共施設白書。支出・利用者数は白書掲載の6ヵ年度（平成26〜令和元年度）
+平均値（単年度の実額ではない）。「－」は原本に記載がないもの（利用者数を把握していない施設など）。
+定義は施設用途により異なる（来館者数・生徒数・給食の配食数など）。
+建築年度は敷地内で最も古い棟の建築年度（本体より古い付属棟の年になる場合がある）。</p>
+
+<p class="sub" style="margin-top:-6px">
+<b>築年数の色</b>は、トップページの「30年で床面積概ね3割縮減」という市の目標と
+同じ<b>築40年</b>を境に濃い色にしてある（40年以上＝青の濃い3色）。色は単に築年数を
+表すだけで、この一覧が縮減対象を決めているわけではない。</p>
+<div class="age-legend">{age_legend}</div>
+
+<input type="search" id="q" placeholder="施設名・分類・{DISTRICT_LABEL}で絞り込み（例: 公民館 / 蒲郡北 / スポーツ）">
 <div class="card tblwrap">
 <table id="t">
-<tr><th>施設名</th><th>分類</th><th>{DISTRICT_LABEL}</th><th>建築年度</th>
+<tr><th>施設名</th><th>分類</th><th>{DISTRICT_LABEL}</th><th>建築年度</th><th>築年数</th>
 <th>延べ床面積(㎡)</th><th>支出6年平均(円)</th><th>利用者数6年平均(人)</th><th>市民1人あたり(円)</th></tr>
 {tr}
 </table>
 </div>
-<p class="src">支出・利用者数は白書掲載の6ヵ年度（平成26〜令和元年度）平均値（単年度の実額ではない）。
-定義は施設用途により異なる（来館者数・児童数・給食提供食数など）。
-詳細と出典ページは<a href="{GITHUB_REPO_URL}">リポジトリのCSV</a>を参照。</p>
+<p class="src">詳細と出典ページは<a href="{GITHUB_REPO_URL}">リポジトリのCSV</a>を参照。</p>
 <script>
   const q = document.getElementById("q"), rows = document.querySelectorAll("#t tr");
   q.addEventListener("input", () => {{
@@ -422,6 +713,18 @@ def build_shisetsu():
     (SITE / "shisetsu.html").write_text(
         page(f"{CITY_NAME}の公共施設 全施設一覧", body), encoding="utf-8")
     print("wrote shisetsu.html")
+
+
+def build_review_copy():
+    """SITE_REVIEW/ に、確認バナーあり・実名プレースホルダーの版を生成する。
+    SITE/（GitHub Pages公開先）には一切影響しない。"""
+    global INCLUDE_VERIFY_BANNER, SITE
+    INCLUDE_VERIFY_BANNER = True
+    SITE = ROOT / "SITE_REVIEW"
+    SITE.mkdir(exist_ok=True)
+    build_index()
+    build_kouku()
+    build_shisetsu()
 
 
 if __name__ == "__main__":
