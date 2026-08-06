@@ -1,0 +1,31 @@
+{
+  "name": "pon-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for pon - 社内HTMLホスティング環境「ぽん」へClaude Code等からアップロードするためのMCPサーバー",
+  "type": "module",
+  "bin": {
+    "pon-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/index.js', 0o755)\"",
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "google-auth-library": "^9.15.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
